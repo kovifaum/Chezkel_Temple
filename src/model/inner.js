@@ -39,33 +39,43 @@ export function buildInner(c) {
   // ---- chambers at the shoulders of the inner gates (40:44-46) ----
   b.push(0, Hi, 0, 0);
   const cham = (tag, x0, z0, x1, z1, door, h = 9) => {
-    b.room(tag, M.wall, { x0, x1, z0, z1, y0: 0, h, t: 0.9, doors: [door] });
+    b.room(tag, M.wall, { x0, x1, z0, z1, y0: 0, h, t: 0.9, doors: Array.isArray(door) ? door : [door] });
     b.box(tag, M.roof, x0, h, z0, x1, h + 1, z1);
   };
-  // north gate, east shoulder: singers' chambers A×3 and the priests who keep the house B (doors face south)
+  // north gate, east shoulder: singers' chambers A×3 and the priests who keep the house B. All faces are south ("פניהם דרך הדרום",
+  // 40:44): A1 opens onto the court, A2 and A3 open south through B's north wall (one door each, as in the book's figure p.15),
+  // and B opens south to the inner court.
   cham('ic.sing.A1', 13, -100, 30, -78, { side: 'z1', c: 21.5, w: 3, h: 6 });
-  cham('ic.sing.A2', 30, -100, 42, -78, { side: 'x1', c: -89, w: 3, h: 6 });
-  cham('ic.sing.A3', 42, -100, 54, -78, { side: 'x1', c: -89, w: 3, h: 6 });
-  cham('ic.house', 28, -78, 54, -64, { side: 'z1', c: 41, w: 3.5, h: 6 });
+  cham('ic.sing.A2', 30, -100, 42, -78, { side: 'z1', c: 36, w: 3, h: 6 });
+  cham('ic.sing.A3', 42, -100, 54, -78, { side: 'z1', c: 48, w: 3, h: 6 });
+  cham('ic.house', 28, -78, 54, -64, [
+    { side: 'z1', c: 41, w: 3.5, h: 6 },
+    { side: 'z0', c: 36, w: 3, h: 6 },
+    { side: 'z0', c: 48, w: 3, h: 6 },
+  ]);
   // east gate, north shoulder: sons of Zadok who keep the altar (door faces north)
   cham('ic.zadok', 58, -46, 100, -14, { side: 'z0', c: 78, w: 3.5, h: 6.5 }, 10);
   b.pop();
 
   // ---- north gate equipment (40:38-43), in the gate's own frame (local x = inward = world +z, local z = world −x)
   b.push(0, Hi, -100, -Math.PI / 2);
-  const table = (tag, mat, u, v, sx, sy, sz) => b.boxC(tag, mat, u, sy / 2, v, sx, sy, sz);
-  // 4 tables outside, at the shoulders of the entrance (40:40), 4 in the cross-corridors (40:39)
-  for (const [u, v] of [[-4, -8.5], [-4, 8.5], [-8, -8.5], [-8, 8.5]]) table('ig.N.tab', M.stoneDark, u, v, 2.6, 1.3, 1.6);
-  for (const [u, v] of [[20.5, -9], [20.5, 9], [33.5, -9], [33.5, 9]]) table('ig.N.tab', M.stoneDark, u, v, 1.6, 1.3, 3);
-  // 4 hewn-stone tables 1½ × 1½ × 1 for the burnt-offering utensils, further in (40:42)
-  for (const [u, v] of [[38, -3.2], [38, 3.2], [42, -3.2], [42, 3.2]]) table('ig.N.stone', M.stone, u, v, 1.5, 1, 1.5);
-  // hooks (שפתים), a handbreadth long, fastened to the chamber walls (40:43)
-  for (let i = 0; i < 8; i++) for (const s of [-1, 1]) b.boxC('ig.N.hook', M.iron, 11 + i * 4.2, 4.4, s * 5.15, 0.5, 0.4, 0.3);
+  const table = (tag, mat, u, v, sx, sy, sz, y0 = 0) => b.boxC(tag, mat, u, y0 + sy / 2, v, sx, sy, sz);
+  // the 8 slaughter tables (40:39-41) stand *inside* the gate system, not in the court (book fn. 30; 40:40 "בהמשך לאולם השער, לצידו של
+  // העולה לפנים השער"): four per side in the ulam hollow (local x 4..10, on the 0.3 threshold slab), thin bars across the passage as in
+  // the book's figure (ב, p.14)
+  for (const u of [4.6, 5.9, 8, 9.3]) for (const s of [-1, 1]) table('ig.N.tab', M.stoneDark, u, s * 3.3, 0.8, 1.3, 2.4, 0.3);
+  // 4 hewn-stone tables 1½ × 1½ × 1 for the burnt-offering utensils, further in – the middle of the gate (40:42, figure ג)
+  for (const u of [24.7, 29.3]) for (const s of [-1, 1]) table('ig.N.stone', M.stone, u, s * 2.5, 1.5, 1, 1.5);
+  // hooks (שפתים), one handbreadth (1/6 cubit) long, fastened to the walls and jutting into the passage (40:43): on the solid stretches
+  // of the chambers' passage-side walls (clear of the pilasters, the doors and the cross-corridor mouths), and on the ulam's inner faces
+  const hk = 1 / 6;
+  for (const u of [11.8, 16.3, 24.8, 29.3, 37.8, 42.3]) for (const s of [-1, 1]) b.boxC('ig.N.hook', M.iron, u, 4.4, s * (5 - hk / 2), 0.5, 0.4, hk);
+  for (const u of [4, 8]) for (const s of [-1, 1]) b.boxC('ig.N.hook', M.iron, u, 4.4, s * (6 - hk / 2), 0.5, 0.4, hk);
   b.pop();
 
   const Z = -100;
-  c.anchor('ig.N.tables8', [0, Hi + 3, Z - 6], '8 שולחנות לשחיטה');
-  c.anchor('ig.N.stone4', [0, Hi + 3, Z + 40], '4 שולחנות גזית');
+  c.anchor('ig.N.tables8', [0, Hi + 3, Z + 6], '8 שולחנות לשחיטה');
+  c.anchor('ig.N.stone4', [0, Hi + 3, Z + 27], '4 שולחנות גזית');
   c.anchor('ig.N.rinse', [0, Hi + 7, Z + 20.5], 'לשכות הדחת העולה – באילמות');
   c.anchor('ic.sing.a', [21, Hi + 11, -89], 'לשכות השרים');
   c.anchor('ic.house.a', [41, Hi + 11, -71], 'שומרי משמרת הבית');
@@ -75,5 +85,5 @@ export function buildInner(c) {
   c.measure('ic.m.between', '100 אמה', [100, Y.outer + 0.5, 30], [200, Y.outer + 0.5, 30]);
   c.measure('ic.m.betweenN', '100 אמה', [30, Y.outer + 0.5, -100], [30, Y.outer + 0.5, -200]);
   c.measure('ic.m.betweenS', '100 אמה', [30, Y.outer + 0.5, 100], [30, Y.outer + 0.5, 200]);
-  c.measure('ic.m.tab8', '1½ × 1½ × 1', [3.95, Hi + 1.4, Z + 38 - 0.75], [3.95, Hi + 1.4, Z + 38 + 0.75]);
+  c.measure('ic.m.tab8', '1½ × 1½ × 1', [3.25, Hi + 1.4, Z + 24.7 - 0.75], [3.25, Hi + 1.4, Z + 24.7 + 0.75]);
 }
