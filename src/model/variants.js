@@ -57,28 +57,39 @@ export function buildVariants(c) {
   c.anchor('variant.mount.a', [0, 40, 700], 'חצר הבית (500 אמה)');
   c.anchor('variant.mount.b', [R - 100, 60, 0], 'שער הר הבית המזרחי');
 
-  // ---- Second-Temple altar, Mishnah Middot 3:1: 32 / 30 / 28 / 26 / 24
+  // ---- Second-Temple altar, Mishnah Middot 3:1: 32 / 30 / 28 / 26 / 24 (the way the Sages read the same verses, book fn. 10:
+  //      "12 אמה" = from the middle in each direction -> 24 for the place of the fire; with the horn cubit and the priests' walking cubit 28,
+  //      with the base 30 and 32). Total height 10 (1 + 5 + 3 + 1), the same as the Gra's altar.
   b.push(0, Y.inner, 0, 0);
   const tier = (name, size, y0, y1) => b.box(`variant.altar32.${name}`, M.altar, -size / 2, y0, -size / 2, size / 2, y1, size / 2);
-  tier('yesod', 32, 0, 1);       // יסוד – 1 high, set back 1 → 30
-  tier('t30', 30, 1, 6);         // up 5, set back 1 → סובב 28
-  tier('t28', 28, 6, 9);         // the circuit walkway for priests
-  tier('t26', 26, 9, 10);        // place of the horns
-  b.box('variant.altar32.top', M.iron, -12, 10, -12, 12, 10.2, 12);  // המערכה 24 × 24
-  for (const [x, z] of [[-12.4, -12.4], [12.4, -12.4], [-12.4, 12.4], [12.4, 12.4]]) b.cyl('variant.altar32.horns', M.bronze, x, 10, z, 0.7, 2.6, 8, 0.32);
+  // יסוד – 1 high, set back 1 → 30. "והיסוד היה מהלך על פני כל הצפון ועל פני כל המערב, ואוכל בדרום אמה אחת ובמזרח אמה אחת" (3:1; book fn. 9):
+  // in the Second Temple the base did not go all round the altar – on the south and the east it is flush with the 30 (in the Gra's reading it does)
+  b.box('variant.altar32.yesod', M.altar, -16, 0, -16, 15, 1, 15);
+  tier('t30', 30, 1, 6);         // up 5, set back 1 → סובב 28 (a one-cubit walkway at height 6)
+  tier('t28', 28, 6, 9);         // up 3 → the level of the horns and of the fire
+  b.box('variant.altar32.top', M.iron, -12, 9, -12, 12, 9.12, 12);   // המערכה 24 × 24 (the horn cubit and the walking cubit lie outside it)
+  for (const [x, z] of [[-13.5, -13.5], [13.5, -13.5], [-13.5, 13.5], [13.5, 13.5]]) {
+    b.boxC('variant.altar32.horns', M.bronze, x, 9.36, z, 1, 0.72, 1);   // the horns, one cubit high (to height 10)
+    b.boxC('variant.altar32.horns', M.bronze, x, 9.86, z, 0.62, 0.28, 0.62);
+  }
   b.push(0, 0, 0, -Math.PI / 2);
-  b.steps('variant.altar32.ramp', M.altar, 48, 16, -8, 8, 0, 0.1875, 32); // כבש 32 × 16, to the south (3:3)
+  b.steps('variant.altar32.ramp', M.altar, 47, 15, -8, 8, 0, 0.1875, 32); // כבש 32 × 16, to the south (3:3), up to the sovev (6)
   b.pop();
-  for (const [x, z, h] of [[0, 0, 3], [-2.5, 1.5, 2.2], [2.2, -1.8, 2.4], [1.6, 2.6, 1.7]]) b.cone('variant.altar32.fire', M.fire, x, 10.2, z, 1.3, h, 7);
+  for (const [x, z, h] of [[0, 0, 3], [-2.5, 1.5, 2.2], [2.2, -1.8, 2.4], [1.6, 2.6, 1.7]]) b.cone('variant.altar32.fire', M.fire, x, 9.12, z, 1.3, h, 7);
   const a = (id, label, p, q, kind) => c.measure(`variant.m.alt.${id}`, label, p, q, kind);
-  a('v32', '32 אמה', [-16, 0.3, 17.6], [16, 0.3, 17.6]);
-  a('v30', '30 אמה', [-15, 1.2, 16.6], [15, 1.2, 16.6]);
-  a('v28', '28 אמה', [-14, 6.2, 15.6], [14, 6.2, 15.6]);
-  a('v26', '26 אמה', [-13, 9.2, 14.6], [13, 9.2, 14.6]);
-  a('v24', '24 אמה', [-12, 10.3, 13.6], [12, 10.3, 13.6]);
-  a('h1', 'אמה', [-17.6, 0, 0], [-17.6, 1, 0], 'v');
-  a('h5', '5 אמות', [-17.6, 1, 0], [-17.6, 6, 0], 'v');
-  a('ramp', '32 על 16', [16.5, 0.3, 44], [48.5, 0.3, 44]);
+  // widths along the west face, heights at the south-west corner (as for the Gra's altar)
+  a('v32', '32 אמה', [-17.4, 1.1, -16], [-17.4, 1.1, 16]);
+  a('v30', '30 אמה', [-16.4, 6.1, -15], [-16.4, 6.1, 15]);
+  a('v28', '28 אמה', [-15.4, 9.1, -14], [-15.4, 9.1, 14]);
+  a('v26', '26 אמה', [-14.4, 9.1, -13], [-14.4, 9.1, 13]);
+  a('v24', '24 אמה', [-13.4, 9.2, -12], [-13.4, 9.2, 12]);
+  a('h1', 'אמה', [-16.7, 0, 16.7], [-16.7, 1, 16.7], 'v');
+  a('h5', '5 אמות', [-15.7, 1, 15.7], [-15.7, 6, 15.7], 'v');
+  a('h3', '3 אמות', [-14.7, 6, 14.7], [-14.7, 9, 14.7], 'v');
+  a('hh1', 'אמה', [-13.7, 9, 13.7], [-13.7, 10, 13.7], 'v');
+  a('h10', '10 אמות', [-18.8, 0, 18.8], [-18.8, 10, 18.8], 'v');
+  a('ramp', '32 אמה', [9, 0.3, 15], [9, 0.3, 47]);        // the כבש of the Mishnah: 32 long (south of the altar) ...
+  a('rampW', '16 אמה', [-8, 0.3, 48.4], [8, 0.3, 48.4]);  // ... and 16 wide
   c.anchor('variant.altar.a', [0, 14, 0], 'מזבח בית שני – 32×32');
   b.pop();
 }
