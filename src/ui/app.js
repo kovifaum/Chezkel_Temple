@@ -386,11 +386,10 @@ export function startApp(root) {
   }
 
   const fmtM = (x) => String(Number(x.toFixed(1)));
-  /** "≈ 3 מ׳" for plain cubit labels ("6 אמות", "אמה", "6 אמות + טפח") */
+  /** "≈ 3 מ׳" for plain cubit labels ("6 אמות", "אמה") – an amah of six handbreadths ≈ 50 cm */
   const metric = (label) => {
-    const m = /^(\d+(?:\.\d+)?)?\s*(אמה|אמות)(\s*\+\s*טפח)?$/.exec(label.trim());
-    if (!m) return '';
-    return ` ≈ ${fmtM(((m[1] ? +m[1] : 1) + (m[3] ? 1 / 6 : 0)) * 0.5)} מ׳`;
+    const m = /^(\d+(?:\.\d+)?)?\s*(אמה|אמות)$/.exec(label.trim());
+    return m ? ` ≈ ${fmtM((m[1] ? +m[1] : 1) * 0.5)} מ׳` : '';
   };
   function measureChips(ids) {
     const ms = model.measuresFor(ids || []);

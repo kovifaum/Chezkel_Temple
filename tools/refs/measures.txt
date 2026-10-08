@@ -181,7 +181,7 @@ house.m.wallFront6	6 אמות	6
 house.m.ulamZ	20 אמה	20
 house.m.ulamX	11 אמה	11
 house.m.ulamWall	3 אמות	3
-house.m.ulamDoor	14 אמה	14
+house.m.ulamDoor	10 אמות	10
 house.m.ulamJamb	5 = 3 + 2	5
 house.m.steps10	10 מעלות	11.66
 house.m.plinth6	6 אמות	6
@@ -193,7 +193,7 @@ house.m.mynach5	5 אמות	5
 house.m.cellWall5	5 אמות	5
 house.m.cell4	4 אמות	4
 house.m.outer5	5 אמות	5
-house.m.cells	33 צלעות	52
+house.m.cells	33 צלעות	74
 house.m.cellW	4 · 5 · 6	4
 house.m.hlfW	19 אמה	19
 house.m.hlfL	11 אמה	11
@@ -210,16 +210,20 @@ lk.N.m.gader	50 אמה	50
 lk.N.m.len	100 אמה	100
 lk.N.m.wid	50 אמה	50
 lk.N.m.walk	10 אמות	10
+lk.N.m.way	1 אמה	1
 lk.N.m.floors	3 קומות	24
 lk.N.m.door	פתחים לצפון	10
+lk.N.m.mavo	המבוא מהקדים	10
 lk.S.m.gader	50 אמה	50
 lk.S.m.len	100 אמה	100
 lk.S.m.wid	50 אמה	50
 lk.S.m.walk	10 אמות	10
+lk.S.m.way	1 אמה	1
 lk.S.m.floors	3 קומות	24
-lk.S.m.door	פתחים לצפון	10
-prop.m.reed	6 אמות + טפח	6.17
-prop.m.reedV	6 אמות + טפח	6.17
+lk.S.m.door	פתחים לדרום	10
+lk.S.m.mavo	המבוא מהקדים	10
+prop.m.reed	6 אמות	6
+prop.m.reedV	6 אמות	6
 variant.m.lish.len	34 אמה	34
 variant.m.lish.dep	6 אמות	6
 variant.m.lish.room	5 לשכות מכל צד	34

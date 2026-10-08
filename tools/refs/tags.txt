@@ -11,8 +11,10 @@ court.pave
 court.wall
 house.altarW
 house.carve
+house.carve.door
 house.cham
 house.doors
+house.doors.beam
 house.floor
 house.gizra
 house.hlf
@@ -35,6 +37,7 @@ ic.wall
 ic.zadok
 ig.E.ail
 ig.E.ailc
+ig.E.ailc.palm
 ig.E.cham
 ig.E.floor
 ig.E.gap
@@ -47,6 +50,7 @@ ig.E.wall
 ig.E.win
 ig.N.ail
 ig.N.ailc
+ig.N.ailc.palm
 ig.N.cham
 ig.N.floor
 ig.N.gap
@@ -62,6 +66,7 @@ ig.N.wall
 ig.N.win
 ig.S.ail
 ig.S.ailc
+ig.S.ailc.palm
 ig.S.cham
 ig.S.floor
 ig.S.gap
@@ -78,12 +83,18 @@ lk.N.f2
 lk.N.f3
 lk.N.gader
 lk.N.gal
+lk.N.mavo
+lk.N.walk
+lk.N.way
 lk.S.door
 lk.S.f1
 lk.S.f2
 lk.S.f3
 lk.S.gader
 lk.S.gal
+lk.S.mavo
+lk.S.walk
+lk.S.way
 lp.E.L.cham
 lp.E.L.pave
 lp.E.R.cham
@@ -98,6 +109,7 @@ lp.S.R.cham
 lp.S.R.pave
 og.E.ail
 og.E.ailc
+og.E.ailc.palm
 og.E.cham
 og.E.door
 og.E.floor
@@ -111,6 +123,7 @@ og.E.wall
 og.E.win
 og.N.ail
 og.N.ailc
+og.N.ailc.palm
 og.N.cham
 og.N.floor
 og.N.gap
@@ -123,6 +136,7 @@ og.N.wall
 og.N.win
 og.S.ail
 og.S.ailc
+og.S.ailc.palm
 og.S.cham
 og.S.floor
 og.S.gap
