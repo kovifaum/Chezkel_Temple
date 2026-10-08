@@ -1,5 +1,5 @@
 import { M } from '../engine/materials.js';
-import { Y } from './dims.js';
+import { D, Y } from './dims.js';
 
 /** Low-poly human figure, feet at (x,y,z), facing local +x rotated by `rot` around Y. */
 export function person(b, tag, x, y, z, rot, { robe = M.linen, skin = M.skin, turban = M.linen, scale = 1, sit = false } = {}) {
@@ -21,9 +21,9 @@ export function person(b, tag, x, y, z, rot, { robe = M.linen, skin = M.skin, tu
   b.pop();
 }
 
-/** measuring reed (קנה המדה) lying or standing: 6 cubits + a handbreadth (0.17 amah) */
+/** measuring reed (קנה המדה) lying or standing: 6 cubits, each of 6 handbreadths (36 handbreadths, 40:5; the model's unit is that cubit, so the reed = one wall thickness = D.reed) */
 export function reed(b, tag, x, y, z, rot, upright) {
-  const L = 6.17;
+  const L = D.reed;
   b.push(x, y, z, rot);
   if (upright) {
     b.box(tag, M.cedar, -0.12, 0, -0.12, 0.12, L, 0.12);
@@ -43,8 +43,8 @@ export function buildProps(c) {
   // reed: standing in the passage beside the wall (one reed high) and lying across the wall's thickness (one reed thick)
   reed(b, 'prop.reed.v', 246, o, 4.2, 0, true);
   reed(b, 'prop.reed.h', 244, o + 6.2, 8.5, 0, false);
-  c.measure('prop.m.reed', '6 אמות + טפח', [244, o + 7.1, 8.5], [250.17, o + 7.1, 8.5]);
-  c.measure('prop.m.reedV', '6 אמות + טפח', [245.3, o, 4.2], [245.3, o + 6.17, 4.2], 'v');
+  c.measure('prop.m.reed', '6 אמות', [244, o + 7.1, 8.5], [244 + D.reed, o + 7.1, 8.5]);
+  c.measure('prop.m.reedV', '6 אמות', [245.3, o, 4.2], [245.3, o + D.reed, 4.2], 'v');
   // flax cord (פתיל פשתים) coiled on the floor
   b.cyl('prop.cord', M.linen, 242.5, o, 2.2, 1.0, 0.4, 16);
   b.cyl('prop.cord', M.linen, 242.5, o + 0.4, 2.2, 0.8, 0.3, 16);
@@ -56,7 +56,8 @@ export function buildProps(c) {
   const PS = 1.5;
   [['a', -26, 7, 0.3], ['b', -26, -7, -0.3], ['c', 18, -13, 1.1], ['d', 18, 13, -1.1], ['e', 31, 0, Math.PI]].forEach(([k, x, z, r]) => person(b, `prop.priest.${k}`, x, i, z, r, { scale: PS }));
   [[84, -2.2, Math.PI], [89, 2.4, Math.PI]].forEach(([x, z, r]) => person(b, 'prop.priest.g', x, i, z, r, { scale: PS }));
-  [[-112, -113, -Math.PI / 2], [-104, -113.5, -Math.PI / 2]].forEach(([x, z, r]) => person(b, 'prop.priest.h', x, Y.house, z, r, { scale: PS }));
+  // (44:19 "ובצאתם אל החצר החיצונה") – standing on the outer court's floor, north of the chambers' wall (גדר), facing the people
+  [[-112, -117, Math.PI / 2], [-104, -117.5, Math.PI / 2]].forEach(([x, z, r]) => person(b, 'prop.priest.h', x, o, z, r, { scale: PS }));
   // Levites at the gates (44:10-14)
   const lv = (k, x, z, y) => person(b, `prop.levite.${k}`, x, y, z, 0, { robe: M.plaster, scale: PS });
   [[-8, -12, i, 'I'], [-8, 12, i, 'I'], [114, -9, o, 'E'], [114, 9, o, 'E'], [-9, -114, o, 'N'], [9, -114, o, 'N'], [-9, 114, o, 'S'], [9, 114, o, 'S']].forEach(([x, z, y, k]) => lv(k, x, z, y));
