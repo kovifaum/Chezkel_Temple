@@ -1,0 +1,25 @@
+{
+  "name": "chezkel-temple",
+  "version": "1.0.0",
+  "description": "אתר תלת־ממד אינטראקטיבי לתבנית הבית בספר יחזקאל, פרקים מ–מד",
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node build.mjs --watch",
+    "serve": "python3 -m http.server 8080",
+    "fetch-data": "python3 tools/fetch_sefaria.py"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kovifaum/Chezkel_Temple.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kovifaum/Chezkel_Temple/issues"
+  },
+  "homepage": "https://github.com/kovifaum/Chezkel_Temple#readme",
+  "dependencies": {
+    "esbuild": "0.24.0",
+    "three": "0.170.0"
+  },
+  "type": "module",
+  "private": true
+}
