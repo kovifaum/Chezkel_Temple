@@ -29,9 +29,9 @@ export function buildGate(c, { id, x, y0, z, ang, kind, steps }) {
   bx('wall', M.wall, 0, 6, 0, wallH, 5, 12.5);
   bx('wall', M.wall, 0, 6, 0, wallH, -12.5, -5);
 
-  // thresholds (סף), 6 wide each (40:6-7)
+  // the threshold (סף), one reed = 6 wide (40:6): the thickness of the wall at the entrance. The second "סף" of 40:6 is the
+  // opposite jamb of the same opening (the wall pieces above); the "סף" of 40:7 is the ail after the ulam (u 48..50, below).
   bx('thr', M.stoneDark, 0, 6, 0, 0.3, -5, 5);
-  bx('thr', M.stoneDark, 40, 46, 0, 0.3, -5, 5);
 
   // three guard chambers each side (תאים) with a small pilaster ("איל") at the inner corner (40:10)
   const chambers = [[6, 14], [19, 27], [32, 40]];
@@ -48,11 +48,19 @@ export function buildGate(c, { id, x, y0, z, ang, kind, steps }) {
       const uc = mir(c1);
       const ua = out ? uc - 1.2 : uc, ub = out ? uc : uc + 1.2;
       b.box(`${id}.ailc`, M.stoneDark, ua, 0, s > 0 ? 4.1 : -5, ub, 12.5, s > 0 ? 5 : -4.1);
+      // palm relief on its passage face (40:16, 40:22 "ואל איל תמרים" = the ails beside the chamber doors). Own tag segment, so that
+      // the scenes of the two end ails (40:26, 31, 34, 37) – which match `.palm` – do not light these.
+      b.push((ua + ub) / 2, 4, s * 4.1, s > 0 ? Math.PI : 0); // local +z faces the passage
+      palm(b, `${id}.ailc.palm`, 0, 0, 0.03, 1.4);
+      b.pop();
     }
     // roof over the chambers only – the passage and the 5-cubit gaps stay open to the sky
     for (const s of [-1, 1]) b.box(`${id}.roof`, M.roof, u0, 12, s > 0 ? 5 : -12.5, u1, 13, s > 0 ? 12.5 : -5);
   }
-  // the 5-cubit gaps between the chambers = "אילמות": unroofed cross-corridors 25 long (40:30)
+  // the 5-cubit gaps between the chambers = "אילמות": unroofed cross-corridors 25 long (40:30).
+  // NOTE: the book's plan (pp. 14-15) draws four such corridors running ~25 out from each edge of the passage, notched into the
+  // shoulder chambers/pavements; that needs matching cut-outs in court.js (lp.*) and inner.js (ic.*), so here each gap is one
+  // cross-strip spanning the whole 25-wide gate.
   for (const [g0, g1] of [[14, 19], [27, 32]]) {
     const u0 = lo(g0, g1), u1 = hi(g0, g1);
     bx('gap', M.stone, g0, g1, 0, 0.12, -12.5, 12.5);
@@ -93,17 +101,17 @@ export function buildGate(c, { id, x, y0, z, ang, kind, steps }) {
     b.poly(`${id}.ail`, M.stone, p, 0, D.ailH - 2);
     b.poly(`${id}.ail`, M.stoneDark, p, D.ailH - 2, D.ailH);
     for (const hh of [14, 30, 45]) b.poly(`${id}.ail`, M.stoneDark, p, hh, hh + 0.5);
-    const rot = s > 0 ? Math.PI : 0; // local +z faces the passage
-    for (const hh of [18, 34]) {
-      b.push(mir(49), hh, s * 6, rot);
-      palm(b, `${id}.palm`, 0, 0, 0.06, 8);
+    // The flank facing the passage is the arc t∈[-1,0] (u = 48+2(1-t²), v = s(9+3t)). Windows (40:16 "ואל אליהמה לפנימה") and the palms
+    // (40:26 etc.) sit on it, each frame turned to the surface normal (3, 4ts) in the (u,v) plane so that local +z faces the passage
+    // and nothing floats off the curved stone.
+    const onFlank = (y, fn) => {
+      const t = -0.56, nu = 3, nv = 4 * t * s;
+      b.push(mir(48 + 2 * (1 - t * t)), y, s * (9 + 3 * t), Math.atan2(out ? nu : -nu, nv));
+      fn();
       b.pop();
-    }
-    for (const hh of [24, 42]) {
-      b.push(mir(49), hh, s * 12, s > 0 ? 0 : Math.PI);
-      slot(b, `${id}.win`, 0, 0, 0, 1.6, 4.4, 1);
-      b.pop();
-    }
+    };
+    for (const hh of [6, 33]) onFlank(hh, () => palm(b, `${id}.palm`, 0, 0, 0.03, 4.4));
+    for (const hh of [18, 46]) onFlank(hh, () => slot(b, `${id}.win`, 0, 0, -0.04, 1.6, 4.4, 1));
   }
   bx('ail', M.stoneDark, 48, 50, 52, D.ailH, -6, 6); // lintel structure (משקוף)
 
@@ -120,7 +128,7 @@ export function buildGate(c, { id, x, y0, z, ang, kind, steps }) {
   m('pass', '10 אמות', P(24, 0.4, -5), P(24, 0.4, 5));
   m('p13', '13 אמה', P(0, 0.5, -4), P(13, 0.5, -4));
   m('thr', '6 אמות', P(0, 0.6, 3), P(6, 0.6, 3));
-  m('thr2', '6 אמות', P(40, 0.6, 3), P(46, 0.6, 3));
+  m('thr2', '6 אמות', P(50.5, 0.6, 6), P(50.5, 0.6, 12)); // the sof of 40:7 = the ail after the ulam: a reed across (right to left)
   m('cham', '6 אמות', P(7, 0.6, 6), P(13, 0.6, 6));
   m('chamW', '6 אמות', P(10, 0.6, 6), P(10, 0.6, 12));
   m('gvul', 'אמה', P(6, 0.6, 13.6), P(7, 0.6, 13.6));
