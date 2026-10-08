@@ -1,5 +1,5 @@
 // Ezekiel 42 – built from the verses and the classic commentators (the attached book ends at 41:26).
-const CH = 21.5; // house level + 8: roofs off, shows floor plans of the first storey
+const CH = 20.5; // just below the floor-1 roof slab (y 20.8-21.5): roofs off, shows the floor plans of the first storey
 export const S42 = {
   1: { title: 'הלשכה נגד הגזרה ונגד הבנין', f: ['lk.N'], at: 'lk.N', v: 'isoN', d: 1.0, a: ['lk.N.a'],
     txt: 'הנביא יוצא אל החצר החיצונה לכיוון צפון, ובא אל הלשכות שמול הגזרה ושמול הבנין – מצפון להם.',

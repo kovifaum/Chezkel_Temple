@@ -4,6 +4,8 @@ import { build, context } from 'esbuild';
 import fs from 'node:fs';
 
 const watch = process.argv.includes('--watch');
+// --out=PATH writes the single-file page there instead of ./index.html (parallel experiments, CI)
+const outArg = (process.argv.find((a) => a.startsWith('--out=')) || '').slice(6);
 
 const options = {
   entryPoints: ['src/main.js'],
@@ -25,13 +27,13 @@ function emit(result) {
     .readFileSync('src/index.template.html', 'utf8')
     .replace('/*__CSS__*/', () => css)
     .replace('/*__JS__*/', () => js);
-  fs.writeFileSync('index.html', html);
-  console.log(`index.html  ${(html.length / 1024 / 1024).toFixed(2)} MB`);
+  fs.writeFileSync(outArg || 'index.html', html);
+  console.log(`${outArg || 'index.html'}  ${(html.length / 1024 / 1024).toFixed(2)} MB`);
   if (process.argv.includes('--artifact')) {
     // fragment for hosts that wrap the page in their own <html>/<head>/<body> skeleton
     const title = /<title>([^<]*)<\/title>/.exec(html)[1];
     fs.mkdirSync('dist', { recursive: true });
-    fs.writeFileSync('dist/artifact.html', `<title>${title}</title>\n<style>${css}</style>\n<div id="app"></div>\n<script>${js}</script>\n`);
+    fs.writeFileSync('dist/artifact.html', `<title>${title}</title>\n<style>${css}</style>\n<div id="app" dir="rtl" lang="he"></div>\n<script>${js}</script>\n`);
     console.log('dist/artifact.html written');
   }
 }

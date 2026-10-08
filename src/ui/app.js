@@ -5,6 +5,7 @@ import { FX } from './fx.js';
 import { gem, CH_NAME, strip, tokenize, stems } from './hebrew.js';
 import { SCENES, CHAPTER_DEFAULT } from '../content/scenes.js';
 import { LEXICON } from '../content/lexicon.js';
+import { PARTS, mapTokens } from '../content/parts.js';
 import { GRA, GRA_INTRO } from '../content/gra.js';
 import { NOTES } from '../content/notes.js';
 import { MISHNAH } from '../content/mishnah.js';
@@ -65,7 +66,7 @@ export function startApp(root) {
 
   const $ = (id) => root.querySelector('#' + id);
   const stageEl = $('stage');
-  const S = { ch: 40, n: null, w: null, tab: 'm3d', mode: 'ghost', cut: null, dims: true, tour: false, sound: false, cardOpen: true, variant: {} };
+  const S = { ch: 40, n: null, w: null, p: null, tab: 'm3d', mode: 'ghost', cut: null, dims: true, tour: false, sound: false, cardOpen: window.innerWidth >= 860, variant: {} };
 
   // ---------------------------------------------------------------- 3D
   const stage = new Stage(stageEl, { onPick });
@@ -73,13 +74,18 @@ export function startApp(root) {
   stage.setModel(model);
   const fx = new FX(stage, model);
   fx.setDoors({ heichal: false, kk: false, east: true });
-  window.__app = { stage, model, S, fx, SCENES, VARIANTS, LEXICON, GRA, MISHNAH, NOTES, go: (...a) => go(...a) };
+  window.__app = { stage, model, S, fx, PARTS, SCENES, VARIANTS, LEXICON, GRA, MISHNAH, NOTES, go: (...a) => go(...a) };
   stage.overview();
   requestAnimationFrame(() => setTimeout(() => $('loading').classList.add('gone'), 400));
 
   // index of verses by focus tag (used when clicking things in 3D)
+  // entries: [tag, ref, part index | null] – parts first so that a click on the model finds the exact phrase
   const tagIndex = [];
-  for (const [ref, sc] of Object.entries(SCENES)) for (const t of sc.f || []) tagIndex.push([t, ref]);
+  for (const [ref, list] of Object.entries(PARTS)) {
+    const at = SCENES[ref]?.at || '';
+    list.forEach((p, i) => { for (const t of p.t || []) tagIndex.push([t.replace('{at}', at), ref, i]); });
+  }
+  for (const [ref, sc] of Object.entries(SCENES)) for (const t of sc.f || []) tagIndex.push([t, ref, null]);
 
   // ---------------------------------------------------------------- text panel
   const chaptersEl = $('chapters');
@@ -102,11 +108,15 @@ export function startApp(root) {
       const num = el('button', 'vnum', gem(v.n));
       num.title = `יחזקאל ${CH_NAME[ch]}:${gem(v.n)}`;
       const p = el('p', 'vtext');
-      tokenize(v.he).forEach((t, i) => {
+      const toks = tokenize(v.he), P = PARTS[`${ch}:${v.n}`], map = mapTokens(toks, P);
+      let cur = null, curP = -2;
+      toks.forEach((t, i) => {
+        const pi = P ? map[i] : -1;
+        if (!cur || pi !== curP) { cur = el('span', 'ph'); cur.dataset.p = pi; p.append(cur); curP = pi; }
         const w = el('span', 'w' + (t.ketiv ? ' ketiv' : ''), esc(t.raw));
         w.dataset.i = i;
-        p.append(w);
-        if (!t.glue) p.append(document.createTextNode(' '));
+        cur.append(w);
+        if (!t.glue) (i + 1 < toks.length && P && map[i + 1] !== pi ? p : cur).append(document.createTextNode(' '));
       });
       sec.append(num, p);
       frag.append(sec);
@@ -117,8 +127,10 @@ export function startApp(root) {
     const sec = e.target.closest('.verse');
     if (!sec) return;
     const n = +sec.dataset.n;
-    const w = e.target.closest('.w');
-    go(S.ch, n, w && !w.classList.contains('ketiv') ? +w.dataset.i : null);
+    let w = e.target.closest('.w');
+    if (!w) w = e.target.closest('.ph')?.querySelector('.w:not(.ketiv)');
+    if (w) { S.tab = 'm3d'; S.cardOpen = true; }
+    go(S.ch, n, w ? +w.dataset.i : null);
   });
 
   // ---------------------------------------------------------------- navigation
@@ -140,24 +152,37 @@ export function startApp(root) {
     S.n = n;
     S.w = w;
     if (n && S.tab === 'gra' && !GRA[`${ch}:${n}`]) S.tab = 'm3d';
+    tokensFor(ch, n);
+    S.p = w != null && curParts ? tokPart[w] : null;
     versesEl.querySelectorAll('.verse.on').forEach((v) => v.classList.remove('on'));
-    versesEl.querySelectorAll('.w.on').forEach((v) => v.classList.remove('on'));
+    versesEl.querySelectorAll('.w.on, .ph.on').forEach((v) => v.classList.remove('on'));
     const sec = n ? versesEl.querySelector(`.verse[data-n="${n}"]`) : null;
     if (sec) {
       sec.classList.add('on');
-      if (w != null) sec.querySelector(`.w[data-i="${w}"]`)?.classList.add('on');
+      if (w != null) {
+        sec.querySelector(`.w[data-i="${w}"]`)?.classList.add('on');
+        if (S.p != null) sec.querySelector(`.ph[data-p="${S.p}"]`)?.classList.add('on');
+      }
       if (scroll) scrollTo(sec);
     }
-    tokensFor(ch, n);
     applyScene();
     renderCard();
     if (hash) { try { history.replaceState(null, '', n ? `#${ch}:${n}` : location.pathname + location.search); } catch (e) { /* sandboxed frames */ } }
     document.title = n ? `יחזקאל ${CH_NAME[ch]}:${gem(n)} · תבנית הבית בתלת־ממד` : 'תבנית הבית – יחזקאל מ–מד בתלת־ממד';
   }
   const verseData = () => DATA[S.ch].verses[S.n - 1];
+  let curParts = null, tokPart = [];
   function tokensFor(ch, n) {
     words = n ? tokenize(DATA[ch].verses[n - 1].he) : [];
+    curParts = n ? PARTS[`${ch}:${n}`] || null : null;
+    tokPart = mapTokens(words, curParts);
   }
+  /** pointed text of part i of the current verse */
+  const partText = (i) => words.filter((t, k) => tokPart[k] === i && !t.ketiv && t.key).map((t) => t.raw.replace(/־$/, '')).join(' ');
+  /** token index of the first word of part i */
+  const firstWord = (i) => words.findIndex((t, k) => tokPart[k] === i && !t.ketiv && t.key);
+  /** select part i of the current verse (stays on the 3D tab) */
+  const selectPart = (i) => { S.tab = 'm3d'; S.cardOpen = true; go(S.ch, S.n, firstWord(i)); };
   const refOf = () => `${S.ch}:${S.n}`;
   const nextRef = (d) => {
     let ch = S.ch, n = (S.n || 0) + d;
@@ -196,37 +221,58 @@ export function startApp(root) {
     applyVariants();
     let eff = { ...curSpec };
     let wordInfo = null;
-    if (S.w != null && words[S.w]) {
+    const part = S.n && S.p != null && curParts ? curParts[S.p] : null;
+    const vf = (tags) => variantsFor(refOf()).reduce((t, { g, opt }) => (g.focus ? g.focus(opt, t) : t), tags);
+    if (part) {
+      // a phrase of the verse: focus exactly what it describes and draw only its own measurements
+      const tags = vf(resolveTags(part.t, curSpec.at));
+      const has = tags.length > 0;
+      const fitT = part.fit ? vf(resolveTags(part.fit, curSpec.at)) : tags;
+      eff = {
+        ...curSpec,
+        f: has ? tags : curSpec.f,
+        fit: has ? (fitT.length ? fitT : tags) : curSpec.fit,
+        m: resolveMeasures(part.m, curSpec.at, curSpec.m),
+        a: [...(part.a || [])],
+        v: part.v || curSpec.v,
+        d: part.d ?? (has ? (curSpec.d || 1) * 0.85 : curSpec.d),
+        cut: 'cut' in part ? part.cut : curSpec.cut,
+        ov: has ? undefined : curSpec.ov,
+        cam: has ? undefined : curSpec.cam,
+      };
+      if (part.ctx) eff.ctx = resolveTags(part.ctx, curSpec.at);
+    } else if (S.w != null && words[S.w]) {
       wordInfo = lookupWord(words[S.w].key);
       const ov = curSpec.words && Object.entries(curSpec.words).find(([k]) => stems(words[S.w].key).includes(k));
       if (ov) wordInfo = { stem: ov[0], entry: ov[1] };
       if (wordInfo) {
-        const vf = (tags) => variantsFor(refOf()).reduce((t, { g, opt }) => (g.focus ? g.focus(opt, t) : t), tags);
         const tags = vf(resolveTags(wordInfo.entry.t, curSpec.at));
         const ms = resolveMeasures(wordInfo.entry.m, curSpec.at, curSpec.m);
         eff = { ...curSpec, f: tags.length ? tags : curSpec.f, fit: tags.length ? tags : curSpec.fit, m: ms.length ? ms : curSpec.m, d: tags.length ? (curSpec.d || 1) * 0.85 : curSpec.d, ov: tags.length ? undefined : curSpec.ov, cam: tags.length ? undefined : curSpec.cam };
       }
     }
-    if (S.n && !(wordInfo && eff.f !== curSpec.f)) {
+    if (S.n && (part || !(wordInfo && eff.f !== curSpec.f))) {
       for (const { g, opt } of variantsFor(refOf())) {
-        if (g.focus) eff.f = g.focus(opt, eff.f || []);
-        if (g.fit) eff.fit = g.fit(opt, eff.fit);
+        if (!part && g.focus) eff.f = g.focus(opt, eff.f || []);
+        if (g.fit && (!part || !eff.fit)) eff.fit = g.fit(opt, eff.fit);
         if (g.measures) eff.m = g.measures(opt, eff.m || []);
         if (g.anchors) eff.a = [...(eff.a || []), ...g.anchors(opt)];
       }
     }
+    S.part = part;
+    S.eff = eff;
     S.wordInfo = wordInfo;
     stage.setMode(curSpec.mode || S.mode);
-    const cutNow = S.cut != null ? S.cut : (curSpec.cut ?? null);
+    const cutNow = S.cut != null ? S.cut : (eff.cut ?? null);
     $('cut').value = cutNow == null ? 125 : Math.max(2, Math.min(124, cutNow));
     const ctx = eff.ctx || (curSpec.at && stage.boxOf([curSpec.at]) ? [curSpec.at] : []);
     stage.show({ ...eff, ctx, cut: cutNow });
-    const fxMode = (wordInfo && wordInfo.entry.fx) || curSpec.fx;
+    const fxMode = part && part.fx !== undefined ? part.fx : (wordInfo && wordInfo.entry.fx) || curSpec.fx;
     fx.setGlory(fxMode === 'glory' ? 'approach' : fxMode === 'fill' ? 'fill' : 'off');
     fx.setDoors({
       heichal: !!curSpec.open?.includes('heichal'),
       kk: !!curSpec.open?.includes('kk'),
-      east: curSpec.shut ? false : true,
+      east: !(curSpec.shut || S.ch === 44),
     });
     drawDims(eff);
     renderHud(wordInfo);
@@ -264,7 +310,8 @@ export function startApp(root) {
     const w = S.w != null && words[S.w] ? words[S.w] : null;
     hud.innerHTML = `<div class="hud-ref">יחזקאל ${CH_NAME[S.ch]}:${gem(S.n)}</div>
       <div class="hud-title">${esc(sc.title || '')}</div>
-      ${w ? `<div class="hud-word"><b>«${esc(w.key)}»</b> ${wordInfo ? esc(wordInfo.entry.g) : 'המילה אינה מסומנת במודל התלת־ממדי; מוצג כל הפסוק.'}</div>` : ''}`;
+      ${S.part ? `<div class="hud-word"><b>«${esc(partText(S.p))}»</b> ${esc(S.part.h)}</div>`
+        : w ? `<div class="hud-word"><b>«${esc(w.key)}»</b> ${wordInfo ? esc(wordInfo.entry.g) : 'המילה אינה מסומנת במודל התלת־ממדי; מוצג כל הפסוק.'}</div>` : ''}`;
   }
 
   // ---------------------------------------------------------------- verse card
@@ -338,29 +385,63 @@ export function startApp(root) {
     wireTab(body);
   }
 
+  const fmtM = (x) => String(Number(x.toFixed(1)));
+  /** "≈ 3 מ׳" for plain cubit labels ("6 אמות", "אמה", "6 אמות + טפח") */
+  const metric = (label) => {
+    const m = /^(\d+(?:\.\d+)?)?\s*(אמה|אמות)(\s*\+\s*טפח)?$/.exec(label.trim());
+    if (!m) return '';
+    return ` ≈ ${fmtM(((m[1] ? +m[1] : 1) + (m[3] ? 1 / 6 : 0)) * 0.5)} מ׳`;
+  };
+  function measureChips(ids) {
+    const ms = model.measuresFor(ids || []);
+    if (!ms.length) return '';
+    const uniq = [...new Map(ms.map((m) => [m.label, m])).values()];
+    return `<div class="chips">${uniq.map((m) => `<span class="mchip">${esc(m.label)}<small>${esc(metric(m.label))}</small></span>`).join('')}</div>`;
+  }
+  const graNotesForPart = (i) => {
+    const ws = words.filter((t, k) => tokPart[k] === i && !t.ketiv && t.key.length >= 3).map((t) => t.key);
+    return (GRA[refOf()] || []).filter(([k]) => strip(k).split(' ').some((x) => x.length >= 3 && ws.some((w) => stems(x).includes(w) || stems(w).includes(x)))).slice(0, 2);
+  };
+
   function tab3d() {
     const sc = curSpec || {};
     let h = '';
-    if (S.w != null && words[S.w]) {
+    if (!S.n) {
+      return h + `<p class="m3d-txt">${esc(CHAPTER_DEFAULT[S.ch]?.txt || '')}</p>
+        <div class="hint"><b>איך מתחילים?</b> לחצו על <b>פסוק</b> בטקסט – המודל יתמקד במה שהוא מתאר. לחצו על <b>מילה או חלק מהפסוק</b> – תקבלו הסבר לאותו חלק, את מידותיו, והוא יודגש במודל. לחצו על <b>חלק במודל</b> – תראו אילו חלקי פסוקים מתארים אותו. או לחצו על ״סיור״ ללימוד אוטומטי.</div>
+        <div class="ctl"><button class="chip" id="startBtn">▶ התחילו בפסוק הראשון</button>${GRA_INTRO[S.ch] ? '<button class="chip" id="introTab">מבוא הספר לפרק</button>' : ''}</div>`;
+    }
+    const P = curParts;
+    if (P && P.length > 1) {
+      h += `<div class="parts" role="group" aria-label="חלקי הפסוק">${P.map((p, i) => `<button class="pchip${S.p === i ? ' on' : ''}" data-p="${i}" title="${esc(p.h)}">${esc(partText(i))}</button>`).join('')}</div>`;
+    }
+    if (S.part) {
+      const p = S.part;
+      const notes = graNotesForPart(S.p);
+      h += `<div class="partcard">
+        <div class="part-top"><button class="nav sm" id="pPrev" aria-label="החלק הקודם" ${S.p === 0 ? 'disabled' : ''}>›</button>
+          <span class="part-n">חלק ${S.p + 1} מתוך ${P.length}</span>
+          <button class="nav sm" id="pNext" aria-label="החלק הבא" ${S.p === P.length - 1 ? 'disabled' : ''}>‹</button>
+          <button class="chip" id="wordClear">כל הפסוק</button></div>
+        <div class="part-w">«${esc(partText(S.p))}»</div>
+        <div class="part-h">${esc(p.h)}</div>
+        <p class="part-e">${esc(p.e)}</p>
+        ${measureChips(S.eff?.m)}
+        ${notes.length ? notes.map(([k, t]) => `<div class="wordcard-n"><b>בספר – ${esc(k)}:</b> ${esc(t)}</div>`).join('') : ''}
+      </div>`;
+    } else if (S.w != null && words[S.w]) {
       const wi = S.wordInfo;
       const note = graNoteFor(words[S.w].key);
       h += `<div class="wordcard"><div class="wordcard-t">«${esc(words[S.w].key)}»</div>
         <div>${wi ? esc(wi.entry.g) : 'המילה אינה מסומנת במודל התלת־ממדי; מוצג הפסוק כולו.'}</div>
         ${note ? `<div class="wordcard-n"><b>בספר:</b> ${esc(note[1])}</div>` : ''}
         <button class="chip" id="wordClear">חזרה לכל הפסוק</button></div>`;
+    } else {
+      h += `<p class="m3d-txt">${esc(sc.txt || '')}</p>`;
+      h += measureChips(S.eff?.m);
+      if (P && P.length) h += `<p class="muted part-hint">לחצו על מילה או על חלק מהפסוק (למעלה או בטקסט) – לקבלת הסבר מפורט וקווי המידה שלו במודל.</p>`;
     }
-    if (!S.n) {
-      return h + `<p class="m3d-txt">${esc(CHAPTER_DEFAULT[S.ch]?.txt || '')}</p>
-        <div class="hint"><b>איך מתחילים?</b> לחצו על <b>פסוק</b> בטקסט – המודל יתמקד במה שהוא מתאר. לחצו על <b>מילה</b> – תראו מה היא מציינת. לחצו על <b>חלק במודל</b> – תראו אילו פסוקים מתארים אותו. או לחצו על ״סיור״ ללימוד אוטומטי.</div>
-        <div class="ctl"><button class="chip" id="startBtn">▶ התחילו בפסוק הראשון</button>${GRA_INTRO[S.ch] ? '<button class="chip" id="introTab">מבוא הספר לפרק</button>' : ''}</div>`;
-    }
-    h += `<p class="m3d-txt">${esc(sc.txt || 'בחרו מילה בפסוק כדי לראות את מקומה במודל.')}</p>`;
-    const ms = model.measuresFor(sc.m || []);
-    if (ms.length) {
-      const uniq = [...new Set(ms.map((m) => m.label))];
-      h += `<div class="chips">${uniq.map((l) => `<span class="mchip">${esc(l)}</span>`).join('')}</div>`;
-    }
-    if (sc.assume) h += `<p class="assume"><b>השלמה/פרשנות במודל:</b> ${esc(sc.assume)}</p>`;
+    if (sc.assume && !S.part) h += `<p class="assume"><b>השלמה/פרשנות במודל:</b> ${esc(sc.assume)}</p>`;
     h += `<div class="ctl"><span>תצוגה:</span>${MODES.map(([k, l, i]) => `<button class="chip mode${(curSpec.mode || S.mode) === k ? ' on' : ''}" data-mode="${k}">${i} ${l}</button>`).join('')}
       <button class="chip" id="cutBtn">▭ חתך אופקי</button><button class="chip" id="dimBtn">${S.dims ? '📏 הסתר מידות' : '📏 הצג מידות'}</button></div>`;
     return h;
@@ -395,8 +476,11 @@ export function startApp(root) {
   function wireTab(body) {
     body.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => { S.mode = b.dataset.mode; curSpec.mode = undefined; stage.setMode(S.mode); renderTab(); }));
     body.querySelector('#cutBtn')?.addEventListener('click', () => { $('cutbar').hidden = false; });
-    body.querySelector('#dimBtn')?.addEventListener('click', () => { S.dims = !S.dims; drawDims(curSpec); renderTab(); });
+    body.querySelector('#dimBtn')?.addEventListener('click', () => { S.dims = !S.dims; drawDims(S.eff || curSpec); renderTab(); });
     body.querySelector('#wordClear')?.addEventListener('click', () => go(S.ch, S.n));
+    body.querySelectorAll('.pchip').forEach((b) => (b.onclick = () => selectPart(+b.dataset.p)));
+    body.querySelector('#pPrev')?.addEventListener('click', () => selectPart(S.p - 1));
+    body.querySelector('#pNext')?.addEventListener('click', () => selectPart(S.p + 1));
     body.querySelector('#startBtn')?.addEventListener('click', () => go(S.ch, 1));
     body.querySelector('#introTab')?.addEventListener('click', () => { S.tab = 'gra'; renderCard(); });
     body.querySelectorAll('[data-var]').forEach((r) => (r.onchange = () => { S.variant[r.dataset.var] = r.value; applyScene(); renderTab(); }));
@@ -404,27 +488,40 @@ export function startApp(root) {
 
   // ---------------------------------------------------------------- 3D picking → verse menu
   const pick = $('pickmenu');
+  const firstWordOf = (ref, i) => {
+    const [c, n] = ref.split(':');
+    const toks = tokenize(DATA[c].verses[n - 1].he), map = mapTokens(toks, PARTS[ref]);
+    return toks.findIndex((t, k) => map[k] === i && !t.ketiv && t.key);
+  };
   function onPick(tag, point) {
-    const hits = new Map();
-    for (const [t, ref] of tagIndex) {
+    const hits = new Map(); // "ref|part" → score
+    for (const [t, ref, pi] of tagIndex) {
       let score = 0;
       if (t === tag) score = 3;
       else if (tagMatches(tag, t)) score = 2;
       else if (tagMatches(t, tag)) score = 1;
-      if (score && (!hits.has(ref) || hits.get(ref) < score)) hits.set(ref, score);
+      const key = `${ref}|${pi ?? ''}`;
+      if (score && (!hits.has(key) || hits.get(key) < score)) hits.set(key, score);
     }
-    const refs = [...hits.entries()].sort((a, b) => b[1] - a[1]).slice(0, 7).map(([r]) => r);
-    if (!refs.length) { pick.hidden = true; return; }
+    const partRefs = new Set([...hits.keys()].filter((k) => !k.endsWith('|')).map((k) => k.split('|')[0]));
+    const items = [...hits.entries()].filter(([k]) => !k.endsWith('|') || !partRefs.has(k.split('|')[0]))
+      .sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k]) => k.split('|'));
+    if (!items.length) { pick.hidden = true; return; }
     const v = point.clone().project(stage.camera);
     const x = (v.x * 0.5 + 0.5) * stage.w, y = (-v.y * 0.5 + 0.5) * stage.h;
-    pick.innerHTML = `<div class="pm-t">פסוקים על חלק זה</div>` + refs.map((r) => {
+    pick.innerHTML = `<div class="pm-t">הפסוקים והחלקים שמתארים חלק זה</div>` + items.map(([r, pi]) => {
       const [c, n] = r.split(':');
-      return `<button data-ref="${r}">יחזקאל ${CH_NAME[c]}:${gem(+n)}<small>${esc(SCENES[r].title || '')}</small></button>`;
+      const label = pi !== '' ? PARTS[r][+pi].h : SCENES[r].title || '';
+      return `<button data-ref="${r}" data-p="${pi}">יחזקאל ${CH_NAME[c]}:${gem(+n)}<small>${esc(label)}</small></button>`;
     }).join('');
     pick.hidden = false;
     pick.style.left = Math.min(Math.max(8, x), stage.w - 230) + 'px';
-    pick.style.top = Math.min(Math.max(8, y), stage.h - 40 - refs.length * 40) + 'px';
-    pick.querySelectorAll('button').forEach((b) => (b.onclick = () => { const [c, n] = b.dataset.ref.split(':'); pick.hidden = true; go(+c, +n); }));
+    pick.style.top = Math.min(Math.max(8, y), stage.h - 40 - items.length * 40) + 'px';
+    pick.querySelectorAll('button').forEach((b) => (b.onclick = () => {
+      const [c, n] = b.dataset.ref.split(':');
+      pick.hidden = true;
+      if (b.dataset.p !== '') { S.tab = 'm3d'; S.cardOpen = true; go(+c, +n, firstWordOf(b.dataset.ref, +b.dataset.p)); } else go(+c, +n);
+    }));
   }
   document.addEventListener('pointerdown', (e) => { if (!pick.hidden && !pick.contains(e.target)) pick.hidden = true; }, true);
 
@@ -446,7 +543,7 @@ export function startApp(root) {
     if (S.tab === 'm3d') renderTab();
   });
   btn('tbCut', '▭<span>חתך</span>', 'חתך אופקי – לראות לתוך המבנים', () => { $('cutbar').hidden = !$('cutbar').hidden; });
-  btn('tbDims', '📏<span>מידות</span>', 'הצג/הסתר מידות', () => { S.dims = !S.dims; drawDims(curSpec); syncTb(); });
+  btn('tbDims', '📏<span>מידות</span>', 'הצג/הסתר מידות', () => { S.dims = !S.dims; drawDims(S.eff || curSpec); syncTb(); });
   btn('tbTour', '▶<span>סיור</span>', 'סיור אוטומטי בפסוקים', () => toggleTour());
   btn('tbSound', '🔈<span>צליל</span>', 'צליל "קול מים רבים" בפסוק בו כבוד ה׳ בא', () => { S.sound = !S.sound; fx.setSound(S.sound); syncTb(); });
   btn('tbQ', '⚙<span>איכות</span>', 'איכות גרפית (גבוהה / בינונית / נמוכה)', () => {
@@ -472,9 +569,9 @@ export function startApp(root) {
     S.cut = v >= 125 ? null : v;
     stage.setCut(S.cut);
   });
-  $('cutOff').onclick = () => { S.cut = null; $('cut').value = 125; stage.setCut(curSpec?.cut ?? null); $('cutbar').hidden = true; };
+  $('cutOff').onclick = () => { S.cut = null; $('cut').value = 125; stage.setCut((S.eff || curSpec)?.cut ?? null); $('cutbar').hidden = true; };
 
-  // tour
+  // tour: each verse as a whole, then its parts one after another
   let tourT = null;
   function toggleTour() {
     S.tour = !S.tour;
@@ -484,12 +581,19 @@ export function startApp(root) {
       if (!S.n) go(S.ch, 1);
       const tick = () => {
         if (!S.tour) return;
-        const r = nextRef(1);
-        if (!r) { S.tour = false; syncTb(); return; }
-        go(r[0], r[1]);
-        tourT = setTimeout(tick, 7500);
+        const P = curParts;
+        if (S.n && P && P.length > 1 && (S.p == null || S.p < P.length - 1)) {
+          const nx = S.p == null ? 0 : S.p + 1;
+          S.tab = 'm3d';
+          go(S.ch, S.n, firstWord(nx));
+        } else {
+          const r = nextRef(1);
+          if (!r) { S.tour = false; syncTb(); return; }
+          go(r[0], r[1]);
+        }
+        tourT = setTimeout(tick, 6500);
       };
-      tourT = setTimeout(tick, 7500);
+      tourT = setTimeout(tick, 6500);
     }
   }
   const stopTour = () => { if (S.tour) { S.tour = false; clearTimeout(tourT); syncTb(); } };
@@ -525,9 +629,9 @@ const HELP = `
 <h2>איך משתמשים?</h2>
 <ul class="help">
 <li><b>לחיצה על פסוק</b> (או על מספרו) – המקדש בתלת־ממד מתמקד במה שהפסוק מתאר: החלקים הרלוונטיים מוארים, השאר שקופים, ומוצגות המידות.</li>
-<li><b>לחיצה על מילה</b> – מציגה את מה שהמילה מציינת במבנה (שער, תאים, אולם, קנה, מזבח…) ואת הסבר הספר.</li>
+<li><b>לחיצה על מילה או על חלק מהפסוק</b> – כל פסוק מחולק לחלקים (ביטויים), וכל חלק מוסבר בנפרד: מה הוא מתאר, מה מידתו (באמות ובמטרים משוער), ואיפה הוא במודל. החלק מודגש בטקסט, בתלת־ממד מוצגים קווי המידה שלו, ואפשר לעבור לחלק הבא/הקודם בכרטיס.</li>
 <li><b>לשוניות הכרטיס</b> – ביאור הגר״א מהספר, רש״י, רד״ק, מצודות, מלבי״ם, אברבנאל, תרגום יונתן, משנה מידות והערות. בפסוקים שבהם יש מחלוקת שאפשר לצייר – בחרו שיטה וראו אותה במודל.</li>
-<li><b>לחיצה על חלק במודל התלת־ממדי</b> – מראה אילו פסוקים מתארים אותו.</li>
+<li><b>לחיצה על חלק במודל התלת־ממדי</b> – מראה אילו פסוקים וחלקי פסוקים מתארים אותו; לחיצה עליהם מובילה אל ההסבר.</li>
 <li><b>עכבר/מגע</b>: גרירה – סיבוב · גלגלת/צביטה – קירוב · לחיצה ימנית/שתי אצבעות – הזזה.</li>
 <li><b>סרגל הכלים</b>: מבט כללי · מצב שקוף/בידוד/רגיל · חתך אופקי (להציץ לתוך ההיכל והתאים) · מידות · סיור אוטומטי · צליל · איכות.</li>
 <li><b>מקשים</b>: ← פסוק הבא · → פסוק קודם · Esc סגירה.</li>

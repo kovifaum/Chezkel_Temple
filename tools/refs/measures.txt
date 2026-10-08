@@ -1,0 +1,238 @@
+og.E.m.len	50 אמה	50
+og.E.m.wid	25 אמה	25
+og.E.m.wid25r	25 אמה	25
+og.E.m.pass	10 אמות	10
+og.E.m.p13	13 אמה	13
+og.E.m.thr	6 אמות	6
+og.E.m.thr2	6 אמות	6
+og.E.m.cham	6 אמות	6
+og.E.m.chamW	6 אמות	6
+og.E.m.gvul	אמה	1
+og.E.m.gap	5 אמות	5
+og.E.m.gap25	25 אמה	25
+og.E.m.ulam	8 אמות	8
+og.E.m.ail	2 אמות	2
+og.E.m.ulamW	6 אמות	6
+og.E.m.ailH	60 אמה	60
+og.E.m.hall	1 + 6 + 1	8
+og.E.m.steps	7 מעלות	9.75
+og.E.m.wallT	6 אמות	6
+og.E.m.wallH	6 אמות	6
+og.N.m.len	50 אמה	50
+og.N.m.wid	25 אמה	25
+og.N.m.wid25r	25 אמה	25
+og.N.m.pass	10 אמות	10
+og.N.m.p13	13 אמה	13
+og.N.m.thr	6 אמות	6
+og.N.m.thr2	6 אמות	6
+og.N.m.cham	6 אמות	6
+og.N.m.chamW	6 אמות	6
+og.N.m.gvul	אמה	1
+og.N.m.gap	5 אמות	5
+og.N.m.gap25	25 אמה	25
+og.N.m.ulam	8 אמות	8
+og.N.m.ail	2 אמות	2
+og.N.m.ulamW	6 אמות	6
+og.N.m.ailH	60 אמה	60
+og.N.m.hall	1 + 6 + 1	8
+og.N.m.steps	7 מעלות	9.75
+og.N.m.wallT	6 אמות	6
+og.N.m.wallH	6 אמות	6
+og.S.m.len	50 אמה	50
+og.S.m.wid	25 אמה	25
+og.S.m.wid25r	25 אמה	25
+og.S.m.pass	10 אמות	10
+og.S.m.p13	13 אמה	13
+og.S.m.thr	6 אמות	6
+og.S.m.thr2	6 אמות	6
+og.S.m.cham	6 אמות	6
+og.S.m.chamW	6 אמות	6
+og.S.m.gvul	אמה	1
+og.S.m.gap	5 אמות	5
+og.S.m.gap25	25 אמה	25
+og.S.m.ulam	8 אמות	8
+og.S.m.ail	2 אמות	2
+og.S.m.ulamW	6 אמות	6
+og.S.m.ailH	60 אמה	60
+og.S.m.hall	1 + 6 + 1	8
+og.S.m.steps	7 מעלות	9.75
+og.S.m.wallT	6 אמות	6
+og.S.m.wallH	6 אמות	6
+lp.E.L.m.depth	44 אמה	44
+lp.E.L.m.len	100 אמה	100
+lp.E.L.m.room	10 אמות	10
+lp.E.L.m.floors	3 קומות	24
+lp.E.R.m.depth	44 אמה	44
+lp.E.R.m.len	100 אמה	100
+lp.E.R.m.room	10 אמות	10
+lp.E.R.m.floors	3 קומות	24
+lp.N.L.m.depth	44 אמה	44
+lp.N.L.m.len	100 אמה	100
+lp.N.L.m.room	10 אמות	10
+lp.N.L.m.floors	3 קומות	24
+lp.N.R.m.depth	44 אמה	44
+lp.N.R.m.len	100 אמה	100
+lp.N.R.m.room	10 אמות	10
+lp.N.R.m.floors	3 קומות	24
+lp.S.L.m.depth	44 אמה	44
+lp.S.L.m.len	100 אמה	100
+lp.S.L.m.room	10 אמות	10
+lp.S.L.m.floors	3 קומות	24
+lp.S.R.m.depth	44 אמה	44
+lp.S.R.m.len	100 אמה	100
+lp.S.R.m.room	10 אמות	10
+lp.S.R.m.floors	3 קומות	24
+court.m.E	500 אמה	500
+court.m.S	500 אמה	500
+court.m.W	500 אמה	500
+court.m.N	500 אמה	500
+ig.E.m.len	50 אמה	50
+ig.E.m.wid	25 אמה	25
+ig.E.m.wid25r	25 אמה	25
+ig.E.m.pass	10 אמות	10
+ig.E.m.p13	13 אמה	13
+ig.E.m.thr	6 אמות	6
+ig.E.m.thr2	6 אמות	6
+ig.E.m.cham	6 אמות	6
+ig.E.m.chamW	6 אמות	6
+ig.E.m.gvul	אמה	1
+ig.E.m.gap	5 אמות	5
+ig.E.m.gap25	25 אמה	25
+ig.E.m.ulam	8 אמות	8
+ig.E.m.ail	2 אמות	2
+ig.E.m.ulamW	6 אמות	6
+ig.E.m.ailH	60 אמה	60
+ig.E.m.hall	1 + 6 + 1	8
+ig.E.m.steps	8 מעלות	11.14
+ig.E.m.wallT	6 אמות	6
+ig.E.m.wallH	6 אמות	12
+ig.N.m.len	50 אמה	50
+ig.N.m.wid	25 אמה	25
+ig.N.m.wid25r	25 אמה	25
+ig.N.m.pass	10 אמות	10
+ig.N.m.p13	13 אמה	13
+ig.N.m.thr	6 אמות	6
+ig.N.m.thr2	6 אמות	6
+ig.N.m.cham	6 אמות	6
+ig.N.m.chamW	6 אמות	6
+ig.N.m.gvul	אמה	1
+ig.N.m.gap	5 אמות	5
+ig.N.m.gap25	25 אמה	25
+ig.N.m.ulam	8 אמות	8
+ig.N.m.ail	2 אמות	2
+ig.N.m.ulamW	6 אמות	6
+ig.N.m.ailH	60 אמה	60
+ig.N.m.hall	1 + 6 + 1	8
+ig.N.m.steps	8 מעלות	11.14
+ig.N.m.wallT	6 אמות	6
+ig.N.m.wallH	6 אמות	12
+ig.S.m.len	50 אמה	50
+ig.S.m.wid	25 אמה	25
+ig.S.m.wid25r	25 אמה	25
+ig.S.m.pass	10 אמות	10
+ig.S.m.p13	13 אמה	13
+ig.S.m.thr	6 אמות	6
+ig.S.m.thr2	6 אמות	6
+ig.S.m.cham	6 אמות	6
+ig.S.m.chamW	6 אמות	6
+ig.S.m.gvul	אמה	1
+ig.S.m.gap	5 אמות	5
+ig.S.m.gap25	25 אמה	25
+ig.S.m.ulam	8 אמות	8
+ig.S.m.ail	2 אמות	2
+ig.S.m.ulamW	6 אמות	6
+ig.S.m.ailH	60 אמה	60
+ig.S.m.hall	1 + 6 + 1	8
+ig.S.m.steps	8 מעלות	11.14
+ig.S.m.wallT	6 אמות	6
+ig.S.m.wallH	6 אמות	12
+ic.m.court	100 אמה	100
+ic.m.courtZ	100 אמה	100
+ic.m.between	100 אמה	100
+ic.m.betweenN	100 אמה	100
+ic.m.betweenS	100 אמה	100
+ic.m.tab8	1½ × 1½ × 1	1.5
+altar.m.b18	18 אמה	18
+altar.m.b16	16 אמה	16
+altar.m.b14	14 אמה	14
+altar.m.b12	12 אמה	12
+altar.m.h1	אמה	1
+altar.m.h2	2 אמות	2
+altar.m.h4a	4 אמות	4
+altar.m.h4b	4 אמות	4
+altar.m.horn	4 אמות	4
+altar.m.ledge	אמה	1
+house.m.len100	100 אמה	100
+house.m.w100	100 אמה	100
+house.m.w70	70 אמה	70
+house.m.heichalL	40 אמה	40
+house.m.heichalW	20 אמה	20
+house.m.kkL	20 אמה	20
+house.m.kkW	20 אמה	20
+house.m.kkDoor	7 אמות	7
+house.m.kkAil	2 אמות	2
+house.m.kkThick	6 = 4 + 2	6
+house.m.kkJamb	6½ אמות	6.5
+house.m.kkWall	4 אמות	4
+house.m.door10	10 אמות	10
+house.m.jamb5	5 אמות	5
+house.m.wall6	6 אמות	6
+house.m.wallFront6	6 אמות	6
+house.m.ulamZ	20 אמה	20
+house.m.ulamX	11 אמה	11
+house.m.ulamWall	3 אמות	3
+house.m.ulamDoor	14 אמה	14
+house.m.ulamJamb	5 = 3 + 2	5
+house.m.steps10	10 מעלות	11.66
+house.m.plinth6	6 אמות	6
+house.m.westWall	6 אמות	6
+house.m.westCell4	4 אמות	4
+house.m.westOuter5	5 אמות	5
+house.m.thin1	אמה	1
+house.m.mynach5	5 אמות	5
+house.m.cellWall5	5 אמות	5
+house.m.cell4	4 אמות	4
+house.m.outer5	5 אמות	5
+house.m.cells	33 צלעות	52
+house.m.cellW	4 · 5 · 6	4
+house.m.hlfW	19 אמה	19
+house.m.hlfL	11 אמה	11
+house.m.hlfWall	5 אמות	5
+house.m.houseH	100 אמה	100
+house.m.gizraW	20 אמה	20
+house.m.gizraN	20 אמה	20
+house.m.binyanL90	90 אמה	90
+house.m.west10	4 + 6	10
+house.m.wings15	15 אמה	15
+house.m.altarW3	3 אמות	3
+house.m.altarW2	2 אמות	2
+lk.N.m.gader	50 אמה	50
+lk.N.m.len	100 אמה	100
+lk.N.m.wid	50 אמה	50
+lk.N.m.walk	10 אמות	10
+lk.N.m.floors	3 קומות	24
+lk.N.m.door	פתחים לצפון	10
+lk.S.m.gader	50 אמה	50
+lk.S.m.len	100 אמה	100
+lk.S.m.wid	50 אמה	50
+lk.S.m.walk	10 אמות	10
+lk.S.m.floors	3 קומות	24
+lk.S.m.door	פתחים לצפון	10
+prop.m.reed	6 אמות + טפח	6.17
+prop.m.reedV	6 אמות + טפח	6.17
+variant.m.lish.len	34 אמה	34
+variant.m.lish.dep	6 אמות	6
+variant.m.lish.room	5 לשכות מכל צד	34
+variant.m.E	500 קנים = 3000 אמה	3000
+variant.m.N	500 קנים = 3000 אמה	3000
+variant.m.S	500 קנים = 3000 אמה	3000
+variant.m.W	500 קנים = 3000 אמה	3000
+variant.m.in	500 אמה	500
+variant.m.alt.v32	32 אמה	32
+variant.m.alt.v30	30 אמה	30
+variant.m.alt.v28	28 אמה	28
+variant.m.alt.v26	26 אמה	26
+variant.m.alt.v24	24 אמה	24
+variant.m.alt.h1	אמה	1
+variant.m.alt.h5	5 אמות	5
+variant.m.alt.ramp	32 על 16	32
