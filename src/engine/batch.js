@@ -75,6 +75,15 @@ export class Batch {
     return this;
   }
 
+  /** flat disc standing on its side; axis 'x' or 'z' is its normal */
+  disc(tag, mat, cx, cy, cz, r, t, axis = 'x', seg = 28) {
+    const g = new THREE.CylinderGeometry(r, r, t, seg);
+    if (axis === 'x') g.rotateZ(Math.PI / 2); else g.rotateX(Math.PI / 2);
+    g.translate(cx, cy, cz);
+    this._add(tag, mat, g);
+    return this;
+  }
+
   cone(tag, mat, cx, y0, cz, r, h, seg = 12) {
     return this.cyl(tag, mat, cx, y0, cz, r, h, seg, 0.0001);
   }

@@ -46,7 +46,7 @@ export function startApp(root) {
       <header class="panel-head">
         <div class="brand"><span class="brand-mark">⌂</span><div><h1>תבנית הבית</h1><small>יחזקאל פרקים מ–מד · בתלת־ממד</small></div></div>
         <nav class="chapters" id="chapters"></nav>
-        <div class="panel-tools"><button id="introBtn" class="chip">מבוא לפרק (הספר)</button><button id="helpBtn" class="chip">איך משתמשים?</button></div>
+        <div class="panel-tools"><button id="introBtn" class="chip">מבוא לפרק</button><button id="helpBtn" class="chip">איך משתמשים?</button></div>
       </header>
       <div class="verses" id="verses" tabindex="0"></div>
       <footer class="panel-foot">נוסח המקרא: ספריא (Miqra according to the Masorah) · פירושים: ספריא · מידות והציורים לפי ביאור הגר״א בספר המצורף</footer>
@@ -151,7 +151,7 @@ export function startApp(root) {
     tokensFor(ch, n);
     applyScene();
     renderCard();
-    if (hash) history.replaceState(null, '', `#${ch}:${n || 0}`);
+    if (hash) { try { history.replaceState(null, '', n ? `#${ch}:${n}` : location.pathname + location.search); } catch (e) { /* sandboxed frames */ } }
     document.title = n ? `יחזקאל ${CH_NAME[ch]}:${gem(n)} · תבנית הבית בתלת־ממד` : 'תבנית הבית – יחזקאל מ–מד בתלת־ממד';
   }
   const verseData = () => DATA[S.ch].verses[S.n - 1];
@@ -198,6 +198,8 @@ export function startApp(root) {
     let wordInfo = null;
     if (S.w != null && words[S.w]) {
       wordInfo = lookupWord(words[S.w].key);
+      const ov = curSpec.words && Object.entries(curSpec.words).find(([k]) => stems(words[S.w].key).includes(k));
+      if (ov) wordInfo = { stem: ov[0], entry: ov[1] };
       if (wordInfo) {
         const vf = (tags) => variantsFor(refOf()).reduce((t, { g, opt }) => (g.focus ? g.focus(opt, t) : t), tags);
         const tags = vf(resolveTags(wordInfo.entry.t, curSpec.at));
@@ -217,8 +219,10 @@ export function startApp(root) {
     stage.setMode(curSpec.mode || S.mode);
     const cutNow = S.cut != null ? S.cut : (curSpec.cut ?? null);
     $('cut').value = cutNow == null ? 125 : Math.max(2, Math.min(124, cutNow));
-    stage.show({ ...eff, cut: cutNow });
-    fx.setGlory(curSpec.fx === 'glory' ? 'approach' : curSpec.fx === 'fill' ? 'fill' : 'off');
+    const ctx = eff.ctx || (curSpec.at && stage.boxOf([curSpec.at]) ? [curSpec.at] : []);
+    stage.show({ ...eff, ctx, cut: cutNow });
+    const fxMode = (wordInfo && wordInfo.entry.fx) || curSpec.fx;
+    fx.setGlory(fxMode === 'glory' ? 'approach' : fxMode === 'fill' ? 'fill' : 'off');
     fx.setDoors({
       heichal: !!curSpec.open?.includes('heichal'),
       kk: !!curSpec.open?.includes('kk'),
@@ -266,7 +270,7 @@ export function startApp(root) {
   // ---------------------------------------------------------------- verse card
   const cardEl = $('card');
   function availableTabs() {
-    if (!S.n) return [['gra', 'הגר״א · הספר']];
+    if (!S.n) return GRA_INTRO[S.ch] ? [['m3d', 'סקירה'], ['gra', 'מבוא · הספר']] : [['m3d', 'סקירה']];
     const v = verseData();
     const c = v.c || {};
     return TABS.filter(([k]) => {
@@ -280,8 +284,13 @@ export function startApp(root) {
     });
   }
 
-  const syncInset = () => stage.setInset(!cardEl.hidden ? cardEl.offsetHeight + 12 : 0, window.innerWidth < 860 ? 52 : 70);
+  const syncInset = () => {
+    const v = $('view').getBoundingClientRect();
+    const bottom = cardEl.hidden ? 0 : Math.max(0, v.bottom - cardEl.getBoundingClientRect().top + 8);
+    stage.setInset(bottom, window.innerWidth < 860 ? 52 : 70);
+  };
   new ResizeObserver(syncInset).observe(cardEl);
+  window.addEventListener('resize', syncInset);
   function renderCard() {
     const tabs = availableTabs();
     if (!tabs.some(([k]) => k === S.tab)) S.tab = tabs[0][0];
@@ -341,7 +350,9 @@ export function startApp(root) {
         <button class="chip" id="wordClear">חזרה לכל הפסוק</button></div>`;
     }
     if (!S.n) {
-      return h + `<p>${esc(CHAPTER_DEFAULT[S.ch]?.txt || '')}</p>`;
+      return h + `<p class="m3d-txt">${esc(CHAPTER_DEFAULT[S.ch]?.txt || '')}</p>
+        <div class="hint"><b>איך מתחילים?</b> לחצו על <b>פסוק</b> בטקסט – המודל יתמקד במה שהוא מתאר. לחצו על <b>מילה</b> – תראו מה היא מציינת. לחצו על <b>חלק במודל</b> – תראו אילו פסוקים מתארים אותו. או לחצו על ״סיור״ ללימוד אוטומטי.</div>
+        <div class="ctl"><button class="chip" id="startBtn">▶ התחילו בפסוק הראשון</button>${GRA_INTRO[S.ch] ? '<button class="chip" id="introTab">מבוא הספר לפרק</button>' : ''}</div>`;
     }
     h += `<p class="m3d-txt">${esc(sc.txt || 'בחרו מילה בפסוק כדי לראות את מקומה במודל.')}</p>`;
     const ms = model.measuresFor(sc.m || []);
@@ -386,6 +397,8 @@ export function startApp(root) {
     body.querySelector('#cutBtn')?.addEventListener('click', () => { $('cutbar').hidden = false; });
     body.querySelector('#dimBtn')?.addEventListener('click', () => { S.dims = !S.dims; drawDims(curSpec); renderTab(); });
     body.querySelector('#wordClear')?.addEventListener('click', () => go(S.ch, S.n));
+    body.querySelector('#startBtn')?.addEventListener('click', () => go(S.ch, 1));
+    body.querySelector('#introTab')?.addEventListener('click', () => { S.tab = 'gra'; renderCard(); });
     body.querySelectorAll('[data-var]').forEach((r) => (r.onchange = () => { S.variant[r.dataset.var] = r.value; applyScene(); renderTab(); }));
   }
 
@@ -423,7 +436,7 @@ export function startApp(root) {
     tb.append(b);
     return b;
   };
-  btn('tbHome', '⌂<span>מבט כללי</span>', 'מבט כללי על הבית', () => { S.n = null; S.w = null; go(S.ch, 0, null, {}); });
+  btn('tbHome', '⌂<span>מבט כללי</span>', 'מבט כללי על הבית', () => { S.tab = 'm3d'; go(S.ch, 0, null, { scroll: false }); });
   const modeBtn = btn('tbMode', '◐<span>שקוף</span>', 'מצב תצוגה: שקוף / בידוד / רגיל', () => {
     const i = MODES.findIndex(([k]) => k === S.mode);
     S.mode = MODES[(i + 1) % MODES.length][0];
@@ -495,13 +508,13 @@ export function startApp(root) {
   const openModal = (html) => { $('modalBody').innerHTML = html; modal.hidden = false; };
   $('modalX').onclick = () => (modal.hidden = true);
   modal.addEventListener('click', (e) => { if (e.target === modal) modal.hidden = true; });
-  $('introBtn').onclick = () => { S.tab = 'gra'; go(S.ch, 0, null, { scroll: false }); };
+  $('introBtn').onclick = () => { S.tab = GRA_INTRO[S.ch] ? 'gra' : 'm3d'; S.cardOpen = true; go(S.ch, 0, null, { scroll: false }); };
   $('helpBtn').onclick = () => openModal(HELP);
 
   // ---------------------------------------------------------------- start
   const m = /^#(\d\d):(\d+)/.exec(location.hash);
   if (m && DATA[+m[1]]) go(+m[1], +m[2], null, { scroll: false });
-  else { renderChapter(40); chaptersEl.querySelector('.chtab').classList.add('on'); S.n = null; curSpec = CHAPTER_DEFAULT[40]; renderHud(null); }
+  else go(40, 0, null, { scroll: false, hash: false });
   window.addEventListener('hashchange', () => {
     const mm = /^#(\d\d):(\d+)/.exec(location.hash);
     if (mm && DATA[+mm[1]] && (+mm[1] !== S.ch || +mm[2] !== S.n)) go(+mm[1], +mm[2], null, { hash: false });

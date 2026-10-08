@@ -27,6 +27,13 @@ function emit(result) {
     .replace('/*__JS__*/', () => js);
   fs.writeFileSync('index.html', html);
   console.log(`index.html  ${(html.length / 1024 / 1024).toFixed(2)} MB`);
+  if (process.argv.includes('--artifact')) {
+    // fragment for hosts that wrap the page in their own <html>/<head>/<body> skeleton
+    const title = /<title>([^<]*)<\/title>/.exec(html)[1];
+    fs.mkdirSync('dist', { recursive: true });
+    fs.writeFileSync('dist/artifact.html', `<title>${title}</title>\n<style>${css}</style>\n<div id="app"></div>\n<script>${js}</script>\n`);
+    console.log('dist/artifact.html written');
+  }
 }
 
 if (watch) {

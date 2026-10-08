@@ -123,7 +123,10 @@ export class FX {
     const tgtOp = mode === 'off' ? 0 : 0.95;
     const mat = this.glory.material;
     mat.opacity += (tgtOp - mat.opacity) * Math.min(1, dt * 2);
-    this.sprite.material.opacity += ((mode === 'off' ? 0 : 0.9) - this.sprite.material.opacity) * Math.min(1, dt * 2);
+    const camD = this.stage.camera.position.distanceTo(this.sprite.position);
+    const near = Math.min(1, Math.max(0.12, camD / (mode === 'fill' ? 220 : 160)));
+    const spriteTarget = mode === 'off' ? 0 : (mode === 'fill' ? 0.4 : 0.9) * near;
+    this.sprite.material.opacity += (spriteTarget - this.sprite.material.opacity) * Math.min(1, dt * 2);
     this.light.intensity += ((mode === 'off' ? 0 : 2.4e4) - this.light.intensity) * Math.min(1, dt * 2);
     if (mat.opacity < 0.01 && mode === 'off') { this.glory.visible = this.sprite.visible = false; return; }
     this.gloryT += dt * (mode === 'approach' ? 0.075 : 0.0);

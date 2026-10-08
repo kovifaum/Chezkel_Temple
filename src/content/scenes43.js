@@ -13,7 +13,7 @@ export const S43 = {
     txt: 'רוח נשאה את הנביא והביאה אותו אל החצר הפנימית, והנה – מלא כבוד ה׳ את הבית.' },
   6: { title: 'ואשמע מדבר אלי מהבית', f: ['house'], fit: ['house.walls', 'house.ulam'], fx: 'fill', open: ['heichal', 'kk'], cam: [10, 40, 52, -92, 28, 0], at: 'house',
     txt: 'הנביא שומע את הדיבור מתוך הבית, והאיש (המלאך) עומד אצלו.' },
-  7: { title: 'מקום כסאי ומקום כפות רגלי', f: ['house.floor', 'house.walls'], fit: ['house.walls'], fx: 'fill', cut: INT, cam: [-72, 22, 0, -118, 26, 0], open: ['heichal', 'kk'], at: 'house',
+  7: { title: 'מקום כסאי ומקום כפות רגלי', f: ['house.floor', 'house.walls'], fit: ['house.walls'], fx: 'fill', cut: INT, cam: [-58, 26, 0.5, -122, 28, 0], ctx: [], open: ['heichal', 'kk'], at: 'house',
     txt: 'זה מקום כסאי ומקום כפות רגלי – אשר אשכן שם בתוך בני ישראל לעולם. לא יטמאו עוד בית ישראל את שם קדשי – הם ומלכיהם, בזנותם ובפגרי מלכיהם.' },
   8: { title: 'ספם את ספי ומזוזתם אצל מזוזתי', f: ['house.ulam', 'house.walls'], fit: ['house.ulam'], v: 'E', d: 1.2, at: 'house', m: ['house.m.ulamWall'],
     txt: 'בתתם סִפָּם את ספי ומזוזתם אצל מזוזתי – והקיר ביני וביניהם: קירבו את בתיהם (ארמונות המלכים) אל קדושת המקדש ובכך טימאו את שם קדשי.' },

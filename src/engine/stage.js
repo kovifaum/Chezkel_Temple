@@ -128,7 +128,13 @@ export class Stage {
     if (m) return m;
     m = base.clone();
     this._applyClip(m);
-    if (kind === 'ghost') {
+    if (kind === 'soft') {
+      m.transparent = true;
+      m.opacity = 0.34;
+      m.depthWrite = false;
+      m.side = THREE.FrontSide;
+      if (m.emissive) m.emissive.setHex(0x000000);
+    } else if (kind === 'ghost') {
       m.transparent = true;
       m.opacity = 0.075;
       m.depthWrite = false;
@@ -157,8 +163,9 @@ export class Stage {
     this._outline();
   }
 
-  setFocus(tags) {
+  setFocus(tags, ctx) {
     this.focusTags = tags || [];
+    this.ctxTags = ctx || [];
     this._restyle();
     this._outline();
   }
@@ -176,10 +183,11 @@ export class Stage {
       } else if (isProp) {
         vis = hit;
       } else if (isScn && !hit) {
-        vis = !(has && this.mode === 'isolate' && m.userData.tag !== 'scn.terrain');
+        vis = !(has && (this.mode === 'isolate' || m.userData.tag === 'scn.city') && m.userData.tag !== 'scn.terrain');
       } else if (has && !hit) {
+        const inCtx = this.ctxTags.length && this.ctxTags.some((t) => tagMatches(m.userData.tag, t));
         if (this.mode === 'isolate') vis = false;
-        else if (this.mode === 'ghost') { mat = this._variant(base, 'ghost'); cast = false; }
+        else if (this.mode === 'ghost') { mat = this._variant(base, inCtx ? 'soft' : 'ghost'); cast = false; }
       } else if (hit && base.emissive) {
         mat = this._variant(base, 'hi');
       }
@@ -216,7 +224,7 @@ export class Stage {
     // clipped solids need to show their inner faces
     const side = y == null ? THREE.FrontSide : THREE.DoubleSide;
     for (const m of this.meshes) if (!m.userData.baseMat.userData.ds) m.userData.baseMat.side = side;
-    for (const [k, mat] of this._matCache) if (!k.endsWith('ghost') && !mat.userData.ds) mat.side = side;
+    for (const [k, mat] of this._matCache) if (!k.endsWith('ghost') && !k.endsWith('soft') && !mat.userData.ds) mat.side = side;
   }
 
   // ---------------------------------------------------------------- camera
@@ -226,7 +234,12 @@ export class Stage {
     const radius = Math.max(size.length() / 2, 5);
     const fov = THREE.MathUtils.degToRad(this.camera.fov);
     const aspect = this.camera.aspect;
-    const fit = radius / Math.sin(Math.min(fov, fov * aspect) / 2);
+    let fit = radius / Math.sin(Math.min(fov, fov * aspect) / 2);
+    if (view === 'top') {
+      // plan view: only the footprint matters
+      const vf = Math.tan(fov / 2), hf = vf * aspect;
+      fit = Math.max((size.z / 2) / vf, (size.x / 2) / hf, 12) * 1.12 + size.y * 0.4;
+    }
     const visible = Math.max(0.35, (this.h - (this.inset || 0) - (this.insetTop || 0)) / this.h);
     const dist = (fit * 1.05 * mul) / visible;
     const v = new THREE.Vector3(...(VIEWS[view] || VIEWS.iso)).normalize();
@@ -247,7 +260,7 @@ export class Stage {
   show(spec = {}) {
     const focus = spec.f || [];
     if (spec.mode) this.setMode(spec.mode);
-    this.setFocus(focus);
+    this.setFocus(focus, spec.ctx);
     if (spec.cut !== undefined) this.setCut(spec.cut);
     this.currentSpec = spec;
 
