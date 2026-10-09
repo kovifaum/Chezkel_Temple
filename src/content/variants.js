@@ -7,7 +7,8 @@ const mount = {
   apply(model, stage, opt) {
     model.setVisible('variant.mount3000', opt === 'reeds');
   },
-  focus: (opt, f) => (opt === 'reeds' ? [...f.filter((t) => t !== 'court.wall'), 'variant.mount3000'] : f),
+  // only the phrases about the wall itself are redrawn as the 3000-cubit mount; other phrases keep their own focus
+  focus: (opt, f) => (opt === 'reeds' && f.includes('court.wall') ? [...f.filter((t) => t !== 'court.wall'), 'variant.mount3000'] : f),
   fit: (opt, fit) => (opt === 'reeds' ? ['variant.mount3000'] : fit),
   measures: (opt, ids) => (opt === 'reeds' ? filterIds(ids, (id) => id.startsWith('court.m.')) : filterIds(ids, (id) => id.startsWith('variant.m.'))),
   anchors: (opt) => (opt === 'reeds' ? ['variant.mount.a', 'variant.mount.b'] : []),

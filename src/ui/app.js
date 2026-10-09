@@ -194,6 +194,7 @@ export function startApp(root) {
   const step = (d) => { const r = nextRef(d); if (r) go(r[0], r[1]); };
 
   // ---------------------------------------------------------------- scene application
+  const expandTags = (tags, at) => (tags || []).map((t) => t.replace('{at}', at || ''));
   const resolveTags = (tags, at) => (tags || []).map((t) => t.replace('{at}', at || '')).filter((t) => t && !t.includes('{at}') && stage.boxOf([t]));
   const resolveMeasures = (ids, at, specM) => {
     let out = [];
@@ -225,9 +226,9 @@ export function startApp(root) {
     const vf = (tags) => variantsFor(refOf()).reduce((t, { g, opt }) => (g.focus ? g.focus(opt, t) : t), tags);
     if (part) {
       // a phrase of the verse: focus exactly what it describes and draw only its own measurements
-      const tags = vf(resolveTags(part.t, curSpec.at));
+      const tags = resolveTags(vf(expandTags(part.t, curSpec.at)), curSpec.at);
       const has = tags.length > 0;
-      const fitT = part.fit ? vf(resolveTags(part.fit, curSpec.at)) : tags;
+      const fitT = part.fit ? resolveTags(vf(expandTags(part.fit, curSpec.at)), curSpec.at) : tags;
       eff = {
         ...curSpec,
         f: has ? tags : curSpec.f,
@@ -246,7 +247,7 @@ export function startApp(root) {
       const ov = curSpec.words && Object.entries(curSpec.words).find(([k]) => stems(words[S.w].key).includes(k));
       if (ov) wordInfo = { stem: ov[0], entry: ov[1] };
       if (wordInfo) {
-        const tags = vf(resolveTags(wordInfo.entry.t, curSpec.at));
+        const tags = resolveTags(vf(expandTags(wordInfo.entry.t, curSpec.at)), curSpec.at);
         const ms = resolveMeasures(wordInfo.entry.m, curSpec.at, curSpec.m);
         eff = { ...curSpec, f: tags.length ? tags : curSpec.f, fit: tags.length ? tags : curSpec.fit, m: ms.length ? ms : curSpec.m, d: tags.length ? (curSpec.d || 1) * 0.85 : curSpec.d, ov: tags.length ? undefined : curSpec.ov, cam: tags.length ? undefined : curSpec.cam };
       }
