@@ -13,10 +13,14 @@ const mount = {
   anchors: (opt) => (opt === 'reeds' ? ['variant.mount.a', 'variant.mount.b'] : []),
 };
 
+// the Gra's altar -> the matching dimension lines of the Second-Temple altar (book fn. 10: "12 אמה" = from the middle each way = 24 for the
+// place of the fire; with the horn cubit and the priests' walking cubit 28, with the sovev 30, with the base 32)
 const ALT = {
-  'altar.m.b18': 'variant.m.alt.v32', 'altar.m.b16': 'variant.m.alt.v30', 'altar.m.b14': 'variant.m.alt.v28', 'altar.m.b12': 'variant.m.alt.v24',
-  'altar.m.h1': 'variant.m.alt.h1', 'altar.m.h2': 'variant.m.alt.h5', 'altar.m.horn': 'variant.m.alt.v26', 'altar.m.ledge': 'variant.m.alt.v30',
+  'altar.m.b16': ['variant.m.alt.v32'], 'altar.m.b14': ['variant.m.alt.v30'], 'altar.m.b12': ['variant.m.alt.v28', 'variant.m.alt.v24'],
+  'altar.m.h2': ['variant.m.alt.h1'], 'altar.m.h4a': ['variant.m.alt.h5'], 'altar.m.h4b': ['variant.m.alt.h3', 'variant.m.alt.hh1'],
+  'altar.m.horn': ['variant.m.alt.hh1'], 'altar.m.h10': ['variant.m.alt.h10'],
 };
+const RAMP = ['variant.m.alt.ramp', 'variant.m.alt.rampW'];
 const altar = {
   apply(model, stage, opt) {
     const mid = opt === 'middot';
@@ -24,8 +28,12 @@ const altar = {
     model.setVisible('altar', !mid);
   },
   focus: (opt, f) => (opt === 'middot' ? [...new Set(f.map((t) => (t.startsWith('altar') ? 'variant.altar32' : t)))] : f),
-  fit: (opt, fit) => (opt === 'middot' ? (fit || []).map((t) => (t.startsWith('altar') ? 'variant.altar32' : t)) : fit),
-  measures: (opt, ids) => (opt === 'middot' ? ids.map((id) => ALT[id]).filter(Boolean).concat(ids.includes('altar.m.b18') ? ['variant.m.alt.ramp'] : []) : ids),
+  fit: (opt, fit) => (opt === 'middot' ? [...new Set((fit || []).map((t) => (t.startsWith('altar') ? 'variant.altar32' : t)))] : fit),
+  measures: (opt, ids) => {
+    if (opt !== 'middot') return ids;
+    const out = [...new Set(ids.flatMap((id) => ALT[id] || []))];
+    return out.includes('variant.m.alt.v32') ? [...out, ...RAMP] : out;
+  },
   anchors: (opt) => (opt === 'middot' ? ['variant.altar.a'] : []),
 };
 
@@ -59,12 +67,12 @@ add(['42:16', '42:17', '42:18', '42:19', '42:20'], {
 });
 
 add(['43:13', '43:14', '43:15', '43:16', '43:17'], {
-  id: 'altar', title: 'המזבח – מזבח יחזקאל מול מזבח בית שני', default: 'ezekiel',
+  id: 'altar', title: 'המזבח – מזבח הגר״א מול מזבח בית שני', default: 'gra',
   options: [
-    { k: 'ezekiel', label: 'מזבח יחזקאל: 18 · 16 · 14 · 12', who: 'הפסוקים (מג:יג–יז)',
-      note: 'ארבע מדרגות, כל אחת מצטמצמת באמה: חיק 18×18 (גובה אמה), עזרה תחתונה 16 (2 גבה), עזרה גדולה 14 (4 גבה), הראל 12 (4 גבה) – ומעליו ארבע קרנות של ארבע אמות. המעלות פונות קדים.' },
-    { k: 'middot', label: 'מזבח בית שני: 32 · 30 · 28 · 26 · 24', who: 'משנה מידות ג:א, ג:ג',
-      note: 'המזבח היה 32×32; יסוד אמה גובה וכנס אמה (30); עלה חמש וכנס אמה – הסובב (28); מקום הקרנות (26); מקום הילוך רגלי הכהנים (24) – מקום המערכה. הכבש מדרום: 32 על 16. לדעת ר׳ יוסי, מתחילה היה 28×28 והוסיפו בני הגולה ארבע אמות מדרום וממערב – כשדרשו ״והאריאל שתים עשרה אורך בשתים עשרה רוחב רבוע״ (גובה המזבח במודל – סכמתי).' },
+    { k: 'gra', label: 'מזבח הגר״א: 16 · 14 · 12 (גובה 2 · 4 · 4)', who: 'ביאור הגר״א – פשט המקראות (הספר, מג:יג–יז)',
+      note: 'שלושה חלקים מרובעים זה על גב זה: היסוד (״חיק״, ״עזרה קטנה״) – 16×16 וגובהו שתי אמות, בולט אמה מכל צד מן הסובב; הסובב (״עזרה גדולה״) – 14×14 וגובהו ארבע אמות, ובקצהו העליון ה״גבול״ – מדף בן חצי אמה (זרת) התלוי באוויר, ולכן 15×15 עם הגבול; והראל/אריאל – 12×12 וגובהו ארבע אמות כולל ארבע הקרנות (הקרנות לבדן – אמה אחת). בסך הכול 10 אמות גובה. כל המידות הנזכרות באמה קטנה (חמישה טפחים), חוץ מארבע אמות גובה הסובב וארבע אמות גובה ההראל, שהן באמות רחבות (ששה טפחים) – 58 טפחים בסך הכול (שתי אמות קטנות ושמונה רחבות). הכבש (״מעלותהו״) – מדרום למזבח, פונה קדים: קרוב יותר לצד מזרח ולא באמצע.' },
+    { k: 'middot', label: 'מזבח בית שני: 32 · 30 · 28 (· 26 · 24)', who: 'דרשת חז״ל · משנה מידות ג:א, ג:ג (הערה 10 בספר)',
+      note: 'חז״ל דרשו שה״שתים עשרה אורך בשתים עשרה רוחב״ הן מאמצע המזבח לכל כיוון – כלומר 24 אמות (משנה מידות ג:א: ״אל ארבעת רבעיו – מלמד שמן האמצע הוא מודד שתים עשרה אמה לכל רוח״). מידה זו היא רק למקום המערכה, בלי הקרנות (אמה מכל צד) ובלי הילוך רגלי הכהנים (אמה מכל צד): האריאל כולו 28, הסובב 30 והיסוד 32. כך היה בבית שני: המזבח 32×32; עלה אמה וכנס אמה – היסוד (30); עלה חמש וכנס אמה – הסובב (28); מקום הקרנות (26); מקום הילוך רגלי הכהנים (24) – מקום המערכה. הכבש – מדרום, 32 על 16. המזבח תפס אפוא מקום גדול בעזרה (32 אמה, והכבש עוד 32), ואילו לפי הגר״א הוא קטן בהרבה: היסוד בבית שני כפול פי 4 באמות מרובעות, ומקום המערכה – פי 9. עוד שוני: בבית שני היסוד לא היה סביב כל המזבח (״ואוכל בדרום אמה אחת ובמזרח אמה אחת״), ואילו בפסוקים כאן היסוד סביב כולו. גבהי המודל (1 · 5 · 3 · 1, בסך הכול 10 – כבמזבח הגר״א) הושלמו בהשערה.' },
   ],
 });
 add(['40:17', '40:18'], {
