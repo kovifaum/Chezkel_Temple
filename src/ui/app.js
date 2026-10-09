@@ -20,17 +20,9 @@ const DATA = { 40: ch40, 41: ch41, 42: ch42, 43: ch43, 44: ch44 };
 const TABS = [
   ['m3d', 'תלת־ממד'],
   ['gra', 'הגר״א · הספר'],
-  ['rashi', 'רש״י'],
-  ['radak', 'רד״ק'],
-  ['metzudat', 'מצודות'],
-  ['malbim', 'מלבי״ם'],
-  ['abarbanel', 'אברבנאל'],
-  ['targum', 'תרגום יונתן'],
-  ['mishna', 'משנה מידות'],
-  ['notes', 'הערות והשוואות'],
   ['en', 'English'],
 ];
-const MODES = [['ghost', 'שקוף', '◐'], ['isolate', 'בידוד', '◼'], ['normal', 'רגיל', '○']];
+const MODES = [['ghost', 'בהקשר', '◐'], ['isolate', 'מבודד', '◼'], ['normal', 'רגיל', '○']];
 
 const el = (tag, cls, html) => {
   const e = document.createElement(tag);
@@ -50,7 +42,7 @@ export function startApp(root) {
         <div class="panel-tools"><button id="introBtn" class="chip">מבוא לפרק</button><button id="helpBtn" class="chip">איך משתמשים?</button></div>
       </header>
       <div class="verses" id="verses" tabindex="0"></div>
-      <footer class="panel-foot">נוסח המקרא: ספריא (Miqra according to the Masorah) · פירושים: ספריא · מידות והציורים לפי ביאור הגר״א בספר המצורף</footer>
+      <footer class="panel-foot">נוסח המקרא: ספריא (Miqra according to the Masorah) · ביאור הגר״א ומידות הבית לפי הספר המצורף</footer>
     </aside>
     <main class="view" id="view">
       <div class="stage" id="stage"></div>
@@ -58,6 +50,12 @@ export function startApp(root) {
       <div class="toolbar" id="toolbar"></div>
       <div class="cutbar" id="cutbar" hidden><label>חתך אופקי <input id="cut" type="range" min="2" max="125" value="125"></label><button id="cutOff" class="chip">בטל חתך</button></div>
       <div class="pickmenu" id="pickmenu" hidden></div>
+      <div class="walkbar" id="walkbar" hidden>
+        <div class="walk-t">🧍 תצוגת 360° · גררו להביט סביב · גלגלת – זום · WASD / חצים – ללכת · לחיצה על הרצפה – ללכת לשם</div>
+        <div class="walk-r"><select id="walkPlaces" aria-label="מקומות לעמוד בהם"></select><button id="walkExit" class="chip">✕ יציאה מהתצוגה הפנימית</button></div>
+        <div class="dpad" aria-hidden="true"><button data-k="KeyW">▲</button><button data-k="KeyA">◀</button><button data-k="KeyS">▼</button><button data-k="KeyD">▶</button></div>
+      </div>
+      <div class="lostbanner" id="lostbanner" hidden>החיבור לכרטיס הגרפי נותק – ממתין לשחזור… (אפשר לרענן את הדף)</div>
       <section class="card" id="card" hidden></section>
       <div class="loading" id="loading">בונה את המקדש… <i></i></div>
     </main>
@@ -66,7 +64,7 @@ export function startApp(root) {
 
   const $ = (id) => root.querySelector('#' + id);
   const stageEl = $('stage');
-  const S = { ch: 40, n: null, w: null, p: null, tab: 'm3d', mode: 'ghost', cut: null, dims: true, tour: false, sound: false, cardOpen: window.innerWidth >= 860, variant: {} };
+  const S = { ch: 40, n: null, w: null, p: null, tab: 'm3d', mode: 'ghost', cut: null, dims: true, tour: false, walk: false, sound: false, cardOpen: window.innerWidth >= 860, variant: {} };
 
   // ---------------------------------------------------------------- 3D
   const stage = new Stage(stageEl, { onPick });
@@ -236,7 +234,7 @@ export function startApp(root) {
         m: resolveMeasures(part.m, curSpec.at, curSpec.m),
         a: [...(part.a || [])],
         v: part.v || curSpec.v,
-        d: part.d ?? (has ? (curSpec.d || 1) * 0.85 : curSpec.d),
+        d: part.d ?? (has ? (curSpec.d || 1) * (S.mode === 'isolate' ? 0.42 : 0.46) : curSpec.d),
         cut: 'cut' in part ? part.cut : curSpec.cut,
         ov: has ? undefined : curSpec.ov,
         cam: has ? undefined : curSpec.cam,
@@ -260,13 +258,22 @@ export function startApp(root) {
         if (g.anchors) eff.a = [...(eff.a || []), ...g.anchors(opt)];
       }
     }
+    if (S.mode === 'isolate' && !part && S.n) {
+      // the isolated model of a whole verse: every measurement of every phrase is drawn
+      const ids = new Set(eff.m || []);
+      for (const p of curParts || []) for (const id of resolveMeasures(p.m, curSpec.at, curSpec.m)) ids.add(id);
+      eff.m = [...ids];
+      eff.d = (eff.d || 1) * 0.72;
+    }
     S.part = part;
     S.eff = eff;
     S.wordInfo = wordInfo;
-    stage.setMode(curSpec.mode || S.mode);
-    const cutNow = S.cut != null ? S.cut : (eff.cut ?? null);
+    const modeNow = S.walk ? 'normal' : (S.mode === 'isolate' ? 'isolate' : (curSpec.mode || S.mode));
+    stage.setMode(modeNow);
+    stageEl.classList.toggle('isolated', modeNow === 'isolate');
+    const cutNow = S.walk ? null : (S.cut != null ? S.cut : (eff.cut ?? null));
     $('cut').value = cutNow == null ? 125 : Math.max(2, Math.min(124, cutNow));
-    const ctx = eff.ctx || (curSpec.at && stage.boxOf([curSpec.at]) ? [curSpec.at] : []);
+    const ctx = S.walk ? [] : (eff.ctx || (curSpec.at && stage.boxOf([curSpec.at]) ? [curSpec.at] : []));
     stage.show({ ...eff, ctx, cut: cutNow });
     const fxMode = part && part.fx !== undefined ? part.fx : (wordInfo && wordInfo.entry.fx) || curSpec.fx;
     fx.setGlory(fxMode === 'glory' ? 'approach' : fxMode === 'fill' ? 'fill' : 'off');
@@ -277,6 +284,7 @@ export function startApp(root) {
     });
     drawDims(eff);
     renderHud(wordInfo);
+    if (S.walk) { const sp = walkSpot(); stage.walkTo(sp.x, sp.z, sp.yaw); }
   }
 
   function drawDims(spec) {
@@ -441,8 +449,15 @@ export function startApp(root) {
       h += measureChips(S.eff?.m);
       if (P && P.length) h += `<p class="muted part-hint">לחצו על מילה או על חלק מהפסוק (למעלה או בטקסט) – לקבלת הסבר מפורט וקווי המידה שלו במודל.</p>`;
     }
+    if (S.mode === 'isolate' && !S.part && P && P.length) {
+      h += `<div class="plist"><h4>🔍 המודל המבודד – כל פרטי הפסוק והמידות</h4>${P.map((p, i) => {
+        const ids = resolveMeasures(p.m, curSpec.at, curSpec.m);
+        return `<div class="plist-i" data-p="${i}"><div class="plist-w">${esc(partText(i))}</div><div class="plist-h">${esc(p.h)}</div><p class="plist-e">${esc(p.e)}</p>${measureChips(ids)}</div>`;
+      }).join('')}</div>`;
+    }
     if (sc.assume && !S.part) h += `<p class="assume"><b>השלמה/פרשנות במודל:</b> ${esc(sc.assume)}</p>`;
-    h += `<div class="ctl"><span>תצוגה:</span>${MODES.map(([k, l, i]) => `<button class="chip mode${(curSpec.mode || S.mode) === k ? ' on' : ''}" data-mode="${k}">${i} ${l}</button>`).join('')}
+    h += `<div class="ctl big"><button class="chip big${S.mode === 'isolate' ? ' on' : ''}" id="isoBtn">${S.mode === 'isolate' ? '↩ חזרה לתצוגה בהקשר' : '🔍 המודל המבודד של הפסוק – עם כל המידות'}</button><button class="chip big" id="walkBtn">🧍 כניסה פנימה – תצוגת 360°</button></div>
+      <div class="ctl"><span>תצוגה:</span>${MODES.map(([k, l, i]) => `<button class="chip mode${(curSpec.mode || S.mode) === k ? ' on' : ''}" data-mode="${k}">${i} ${l}</button>`).join('')}
       <button class="chip" id="cutBtn">▭ חתך אופקי</button><button class="chip" id="dimBtn">${S.dims ? '📏 הסתר מידות' : '📏 הצג מידות'}</button></div>`;
     return h;
   }
@@ -474,11 +489,14 @@ export function startApp(root) {
   }
 
   function wireTab(body) {
-    body.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => { S.mode = b.dataset.mode; curSpec.mode = undefined; stage.setMode(S.mode); renderTab(); }));
+    body.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => { S.mode = b.dataset.mode; curSpec.mode = undefined; syncTb(); applyScene(); renderTab(); }));
     body.querySelector('#cutBtn')?.addEventListener('click', () => { $('cutbar').hidden = false; });
     body.querySelector('#dimBtn')?.addEventListener('click', () => { S.dims = !S.dims; drawDims(S.eff || curSpec); renderTab(); });
     body.querySelector('#wordClear')?.addEventListener('click', () => go(S.ch, S.n));
     body.querySelectorAll('.pchip').forEach((b) => (b.onclick = () => selectPart(+b.dataset.p)));
+    body.querySelectorAll('.plist-i').forEach((b) => (b.onclick = () => selectPart(+b.dataset.p)));
+    body.querySelector('#isoBtn')?.addEventListener('click', () => { S.mode = S.mode === 'isolate' ? 'ghost' : 'isolate'; curSpec.mode = undefined; syncTb(); applyScene(); renderTab(); });
+    body.querySelector('#walkBtn')?.addEventListener('click', () => enterWalk());
     body.querySelector('#pPrev')?.addEventListener('click', () => selectPart(S.p - 1));
     body.querySelector('#pNext')?.addEventListener('click', () => selectPart(S.p + 1));
     body.querySelector('#startBtn')?.addEventListener('click', () => go(S.ch, 1));
@@ -525,6 +543,81 @@ export function startApp(root) {
   }
   document.addEventListener('pointerdown', (e) => { if (!pick.hidden && !pick.contains(e.target)) pick.hidden = true; }, true);
 
+  // ---------------------------------------------------------------- 360° inside view
+  const PLACES = [
+    ['שער החצר החיצונה (מזרח) – מבחוץ', 266, 0, Math.PI / 2],
+    ['תוך שער החצר החיצונה', 225, 0, Math.PI / 2],
+    ['החצר החיצונה – מול השער הפנימי', 140, 0, Math.PI / 2],
+    ['שער החצר הפנימית (מזרח)', 78, 0, Math.PI / 2],
+    ['החצר הפנימית – מול המזבח והבית', 44, 0, Math.PI / 2],
+    ['המזבח – מדרום לו', 0, 16, Math.PI / 2],
+    ['אולם הבית', -56, 0, Math.PI / 2],
+    ['ההיכל – מבפנים', -86, 0, Math.PI / 2],
+    ['קודש הקדשים', -128, 0, -Math.PI / 2],
+    ['הגזרה – מאחורי הבית', -170, 0, Math.PI / 2],
+    ['לשכות המאה (צפון) – המעבר', -58, -60, Math.PI],
+    ['לשכות המאה (דרום) – המעבר', -58, 60, 0],
+    ['לשכות החמישים (צפון-מזרח)', 90, -80, Math.PI / 2],
+    ['שער החצר החיצונה (צפון)', 0, -226, Math.PI],
+    ['שער החצר הפנימית (צפון)', 0, -80, Math.PI],
+  ];
+  const sx0 = (b) => b.max.x - b.min.x;
+  function walkSpot() {
+    const eff = S.eff || curSpec;
+    const tags = (eff.fit && eff.fit.length ? eff.fit : eff.f) || [];
+    const box = tags.length ? stage.boxOf(tags) : null;
+    const at = curSpec.at || '';
+    const yaw = /\.N(\.|$)/.test(at) ? Math.PI : /\.S(\.|$)/.test(at) ? 0 : Math.PI / 2;
+    if (curSpec.walk) return { x: curSpec.walk[0], z: curSpec.walk[1], yaw: curSpec.walk[2] };
+    if (at === 'house' && sx0(box) > 40) return { x: -88, z: 0, yaw: Math.PI / 2 }; // inside the heichal rather than inside a wall
+    if (!box) return { x: 266, z: 0, yaw: Math.PI / 2 };
+    const cx = (box.min.x + box.max.x) / 2, cz = (box.min.z + box.max.z) / 2;
+    const sx = box.max.x - box.min.x, sz = box.max.z - box.min.z;
+    // a small object (altar, reed, a table…) is viewed from beside it; a room or a gate is entered
+    if (sx < 26 && sz < 26) return { x: Math.min(box.max.x + 16, 250), z: cz, yaw: Math.PI / 2 };
+    return { x: cx, z: cz, yaw };
+  }
+  function enterWalk() {
+    if (S.walk) return;
+    S.walk = true;
+    S.cardWasOpen = S.cardOpen;
+    S.cardOpen = false;
+    stage.fly = null;
+    const sp = walkSpot();
+    root.querySelector('.app').classList.add('walking');
+    stage.enterWalk(sp.x, sp.z, sp.yaw);
+    $('walkbar').hidden = false;
+    stopTour();
+    applyScene();
+    renderCard();
+    syncTb();
+  }
+  function exitWalk() {
+    if (!S.walk) return;
+    S.walk = false;
+    stage.exitWalk();
+    root.querySelector('.app').classList.remove('walking');
+    $('walkbar').hidden = true;
+    S.cardOpen = S.cardWasOpen !== false;
+    applyScene();
+    renderCard();
+    syncTb();
+  }
+  {
+    const sel = $('walkPlaces');
+    sel.innerHTML = '<option value="">🧭 קפצו למקום…</option>' + PLACES.map((p, i) => `<option value="${i}">${p[0]}</option>`).join('');
+    sel.onchange = () => { if (sel.value !== '') { const p = PLACES[+sel.value]; stage.walkTo(p[1], p[2], p[3]); sel.value = ''; } };
+    $('walkExit').onclick = exitWalk;
+    $('walkbar').querySelectorAll('.dpad button').forEach((b) => {
+      const k = b.dataset.k;
+      const on = (e) => { e.preventDefault(); stage.walk?.keys.add(k); };
+      const off = () => stage.walk?.keys.delete(k);
+      b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointerleave', off); b.addEventListener('pointercancel', off);
+    });
+  }
+  stage.onAutoQuality = (q) => { S.q = q; syncTb(); };
+  stage.onLost = (lost) => { $('lostbanner').hidden = !lost; };
+
   // ---------------------------------------------------------------- toolbar
   const tb = $('toolbar');
   const btn = (id, label, title, fn) => {
@@ -538,10 +631,18 @@ export function startApp(root) {
     const i = MODES.findIndex(([k]) => k === S.mode);
     S.mode = MODES[(i + 1) % MODES.length][0];
     curSpec.mode = undefined;
-    stage.setMode(S.mode);
     syncTb();
+    applyScene();
     if (S.tab === 'm3d') renderTab();
   });
+  btn('tbIso', '🔍<span>מבודד</span>', 'מודל מבודד של הפסוק – עם כל המידות', () => {
+    S.mode = S.mode === 'isolate' ? 'ghost' : 'isolate';
+    curSpec.mode = undefined;
+    syncTb();
+    applyScene();
+    if (S.tab === 'm3d') renderTab();
+  });
+  btn('tbWalk', '🧍<span>360°</span>', 'כניסה פנימה – תצוגת 360° (כמו Street View)', () => (S.walk ? exitWalk() : enterWalk()));
   btn('tbCut', '▭<span>חתך</span>', 'חתך אופקי – לראות לתוך המבנים', () => { $('cutbar').hidden = !$('cutbar').hidden; });
   btn('tbDims', '📏<span>מידות</span>', 'הצג/הסתר מידות', () => { S.dims = !S.dims; drawDims(S.eff || curSpec); syncTb(); });
   btn('tbTour', '▶<span>סיור</span>', 'סיור אוטומטי בפסוקים', () => toggleTour());
@@ -557,6 +658,8 @@ export function startApp(root) {
     const m = MODES.find(([k]) => k === S.mode);
     modeBtn.innerHTML = `${m[2]}<span>${m[1]}</span>`;
     $('tbDims').classList.toggle('off', !S.dims);
+    $('tbIso').classList.toggle('on', S.mode === 'isolate');
+    $('tbWalk').classList.toggle('on', S.walk);
     $('tbSound').innerHTML = `${S.sound ? '🔊' : '🔈'}<span>צליל</span>`;
     $('tbSound').classList.toggle('on', S.sound);
     $('tbTour').innerHTML = `${S.tour ? '⏸' : '▶'}<span>${S.tour ? 'עצור' : 'סיור'}</span>`;
@@ -601,7 +704,8 @@ export function startApp(root) {
 
   // keyboard (RTL: ← is "next")
   document.addEventListener('keydown', (e) => {
-    if (e.target.matches('input, textarea')) return;
+    if (e.target.matches('input, textarea, select')) return;
+    if (S.walk) { if (e.key === 'Escape') exitWalk(); return; }
     if (e.key === 'ArrowLeft') { e.preventDefault(); step(1); }
     else if (e.key === 'ArrowRight') { e.preventDefault(); step(-1); }
     else if (e.key === 'Escape') { $('modal').hidden = true; pick.hidden = true; }
@@ -630,10 +734,12 @@ const HELP = `
 <ul class="help">
 <li><b>לחיצה על פסוק</b> (או על מספרו) – המקדש בתלת־ממד מתמקד במה שהפסוק מתאר: החלקים הרלוונטיים מוארים, השאר שקופים, ומוצגות המידות.</li>
 <li><b>לחיצה על מילה או על חלק מהפסוק</b> – כל פסוק מחולק לחלקים (ביטויים), וכל חלק מוסבר בנפרד: מה הוא מתאר, מה מידתו (באמות ובמטרים משוער), ואיפה הוא במודל. החלק מודגש בטקסט, בתלת־ממד מוצגים קווי המידה שלו, ואפשר לעבור לחלק הבא/הקודם בכרטיס.</li>
-<li><b>לשוניות הכרטיס</b> – ביאור הגר״א מהספר, רש״י, רד״ק, מצודות, מלבי״ם, אברבנאל, תרגום יונתן, משנה מידות והערות. בפסוקים שבהם יש מחלוקת שאפשר לצייר – בחרו שיטה וראו אותה במודל.</li>
+<li><b>לשוניות הכרטיס</b> – התלת־ממד (ההסבר והמידות של כל חלק), ביאור הגר״א מהספר המצורף, והתרגום לאנגלית.</li>
 <li><b>לחיצה על חלק במודל התלת־ממדי</b> – מראה אילו פסוקים וחלקי פסוקים מתארים אותו; לחיצה עליהם מובילה אל ההסבר.</li>
 <li><b>עכבר/מגע</b>: גרירה – סיבוב · גלגלת/צביטה – קירוב · לחיצה ימנית/שתי אצבעות – הזזה.</li>
-<li><b>סרגל הכלים</b>: מבט כללי · מצב שקוף/בידוד/רגיל · חתך אופקי (להציץ לתוך ההיכל והתאים) · מידות · סיור אוטומטי · צליל · איכות.</li>
+<li><b>🔍 מודל מבודד</b>: לכל פסוק אפשר להציג את החלק שהוא מתאר לבדו, עם <b>כל המידות</b> והסבר מפורט לכל חלק.</li>
+<li><b>🧍 תצוגת 360°</b>: כניסה פנימה, כמו ב־Street View – גרירה להבטה סביב, גלגלת לזום, WASD/חצים ללכת, לחיצה על הרצפה ללכת לשם, ורשימת מקומות לקפיצה (שערים, חצרות, המזבח, ההיכל, קודש הקדשים, הלשכות).</li>
+<li><b>סרגל הכלים</b>: מבט כללי · מבודד · 360° · חתך אופקי · מידות · סיור אוטומטי · צליל · איכות.</li>
 <li><b>מקשים</b>: ← פסוק הבא · → פסוק קודם · Esc סגירה.</li>
 </ul>
 <p class="muted">היחידות באמות (אמה ≈ 50 ס״מ). המודל מצייר את הבית כפי שמבאר הגר״א בספר המצורף (חלק א׳: פרקים מ–מא; חלק ב׳: פרקים מב–מד,יד); ובמקומות שהספר אינו קובע – בעיקר מד,טו–לא – הגיאומטריה נבנתה מן הפסוקים ומפירושי הראשונים, והם מסומנים כ״השלמה״.</p>`;

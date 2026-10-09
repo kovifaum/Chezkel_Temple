@@ -28,7 +28,8 @@ export const Y = {
 };
 
 export const levelAt = (x, z) => {
-  if (x >= -150 && x <= -50 && Math.abs(z) <= 50) return Y.house;
+  if (x >= -156 && x <= -44 && Math.abs(z) <= 110) return Y.house; // the house, its gizra and the 100x50 chambers stand on one platform
+  if (x >= 62 && x <= 118 && Math.abs(z) >= 52 && Math.abs(z) <= 108) return Y.inner; // the 50x50 chambers
   if (Math.abs(x) <= 50 && Math.abs(z) <= 50) return Y.inner;
   if (x > 50 && x <= 100 && Math.abs(z) <= 12.5) return Y.inner;
   if (Math.abs(x) <= 12.5 && Math.abs(z) > 50 && Math.abs(z) <= 100) return Y.inner;

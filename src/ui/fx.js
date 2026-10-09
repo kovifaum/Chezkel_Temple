@@ -117,6 +117,7 @@ export class FX {
       if (open === undefined) continue;
       const target = open ? piv.userData.open : piv.userData.closed;
       piv.rotation.y += (target - piv.rotation.y) * Math.min(1, dt * 2.4);
+      if (Math.abs(target - piv.rotation.y) > 0.002) this.stage.shadowDirty = 3;
     }
     // glory
     const mode = this.gloryMode;
