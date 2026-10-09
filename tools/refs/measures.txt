@@ -208,22 +208,69 @@ house.m.west10	4 + 6	10
 house.m.wings15	15 אמה	15
 house.m.altarW3	3 אמות	3
 house.m.altarW2	2 אמות	2
-lk.N.m.gader	50 אמה	50
 lk.N.m.len	100 אמה	100
 lk.N.m.wid	50 אמה	50
+lk.N.m.outer	50 אמה	50
+lk.N.m.diag	אלכסון 45°	70.71
+lk.N.m.gizra	20 אמה	20
 lk.N.m.walk	10 אמות	10
 lk.N.m.way	1 אמה	1
-lk.N.m.floors	3 קומות	24
-lk.N.m.door	פתחים לצפון	10
-lk.N.m.mavo	המבוא מהקדים	10
-lk.S.m.gader	50 אמה	50
+lk.N.m.fifteen	15 אמה	15
+lk.N.m.five	5 אמות	5
+lk.N.m.cwall	6 אמות	6
+lk.N.m.floors	3 קומות	30
+lk.N.m.wall1	5 אמות	5
+lk.N.m.wall2	4 אמות	4
+lk.N.m.wall3	3 אמות	3
+lk.N.m.atik6	6 אמות	6
+lk.N.m.atik4	4 אמות	4
+lk.N.m.atik2	2 אמות	2
+lk.N.m.atikStart	מקיר הצלעות	0
+lk.N.m.atikEnd	עד הרצפות שבחצר החיצונה	0
+lk.N.m.thirds	אתיק אל פני אתיק בשלישים	63.3
+lk.N.m.door	פתחים לצפון	29
+lk.N.m.gader	50 אמה	50
+lk.N.m.mavo	המבוא מהקדים	14.14
+lk.N.m.drop	10 אמות	10
+lk.fifty.N.m.len	50 אמה	50
+lk.fifty.N.m.wid	50 אמה	50
+lk.fifty.N.m.walk	10 אמות	10
+lk.fifty.N.m.way	1 אמה	1
+lk.fifty.N.m.floors	3 קומות	30
+lk.fifty.N.m.door	פתחים לצפון	15
+lk.fifty.N.m.mavo	מדרגות אל החצר החיצונה	5.66
 lk.S.m.len	100 אמה	100
 lk.S.m.wid	50 אמה	50
+lk.S.m.outer	50 אמה	50
+lk.S.m.diag	אלכסון 45°	70.71
+lk.S.m.gizra	20 אמה	20
 lk.S.m.walk	10 אמות	10
 lk.S.m.way	1 אמה	1
-lk.S.m.floors	3 קומות	24
-lk.S.m.door	פתחים לדרום	10
-lk.S.m.mavo	המבוא מהקדים	10
+lk.S.m.fifteen	15 אמה	15
+lk.S.m.five	5 אמות	5
+lk.S.m.cwall	6 אמות	6
+lk.S.m.floors	3 קומות	30
+lk.S.m.wall1	5 אמות	5
+lk.S.m.wall2	4 אמות	4
+lk.S.m.wall3	3 אמות	3
+lk.S.m.atik6	6 אמות	6
+lk.S.m.atik4	4 אמות	4
+lk.S.m.atik2	2 אמות	2
+lk.S.m.atikStart	מקיר הצלעות	0
+lk.S.m.atikEnd	עד הרצפות שבחצר החיצונה	0
+lk.S.m.thirds	אתיק אל פני אתיק בשלישים	63.3
+lk.S.m.door	פתחים לדרום	29
+lk.S.m.gader	50 אמה	50
+lk.S.m.mavo	המבוא מהקדים	14.14
+lk.S.m.drop	10 אמות	10
+lk.fifty.S.m.len	50 אמה	50
+lk.fifty.S.m.wid	50 אמה	50
+lk.fifty.S.m.walk	10 אמות	10
+lk.fifty.S.m.way	1 אמה	1
+lk.fifty.S.m.floors	3 קומות	30
+lk.fifty.S.m.door	פתחים לדרום	15
+lk.fifty.S.m.mavo	מדרגות אל החצר החיצונה	5.66
+lk.m.mavoE	המבוא מהקדים	16
 prop.m.reed	6 אמות	6
 prop.m.reedV	6 אמות	6
 variant.m.lish.len	34 אמה	34

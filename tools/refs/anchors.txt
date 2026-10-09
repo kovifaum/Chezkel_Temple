@@ -30,8 +30,15 @@ house.ulam.a	האולם
 house.binyan.a	הבנין (70 × 90)
 house.gizra.a	הגזרה
 house.hlf.a	בית החליפות
-lk.N.a	לשכות הקדש
-lk.S.a	לשכות הקדש
+lk.N.a	לשכות המאה
+lk.N.atik.a	אתיק
+lk.fifty.N.a	לשכות החמישים
+lk.S.a	לשכות המאה
+lk.S.atik.a	אתיק
+lk.fifty.S.a	לשכות החמישים
+lk.gader.a	גדרת הגינה
+lk.gader.b	גדרת הגינה
+lk.gader.c	המבוא מהקדים
 variant.mount.a	חצר הבית (500 אמה)
 variant.mount.b	שער הר הבית המזרחי
 variant.altar.a	מזבח בית שני – 32×32
