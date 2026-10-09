@@ -1,11 +1,11 @@
 altar.ariel
-altar.az1
-altar.az2
 altar.fire
 altar.harel
-altar.hek
 altar.horns
-altar.steps
+altar.ledge
+altar.ramp
+altar.sovev
+altar.yesod
 court.base
 court.pave
 court.wall
@@ -177,7 +177,6 @@ scn.terrain
 variant.altar32.fire
 variant.altar32.horns
 variant.altar32.ramp
-variant.altar32.t26
 variant.altar32.t28
 variant.altar32.t30
 variant.altar32.top

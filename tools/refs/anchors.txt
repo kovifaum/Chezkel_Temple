@@ -19,7 +19,11 @@ ic.sing.a	לשכות השרים
 ic.house.a	שומרי משמרת הבית
 ic.zadok.a	בני צדוק – שומרי המזבח
 altar.a	המזבח
-altar.ariel	האריאל
+altar.ariel	האריאל (ההראל)
+altar.yesod	היסוד – החיק
+altar.sovev	הסובב – העזרה הגדולה
+altar.ledge	הגבול
+altar.ramp	מעלותיו – הכבש
 house.heichal.a	ההיכל
 house.kk.a	קודש הקדשים
 house.ulam.a	האולם

@@ -152,16 +152,18 @@ ic.m.between	100 אמה	100
 ic.m.betweenN	100 אמה	100
 ic.m.betweenS	100 אמה	100
 ic.m.tab8	1½ × 1½ × 1	1.5
-altar.m.b18	18 אמה	18
 altar.m.b16	16 אמה	16
 altar.m.b14	14 אמה	14
+altar.m.b15	15 אמה עם הגבול	15
 altar.m.b12	12 אמה	12
-altar.m.h1	אמה	1
+altar.m.p1	אמה	1
+altar.m.s1	אמה	1
+altar.m.ledge	חצי אמה	0.5
 altar.m.h2	2 אמות	2
 altar.m.h4a	4 אמות	4
 altar.m.h4b	4 אמות	4
-altar.m.horn	4 אמות	4
-altar.m.ledge	אמה	1
+altar.m.horn	אמה	1
+altar.m.h10	10 אמות	10
 house.m.len100	100 אמה	100
 house.m.w100	100 אמה	100
 house.m.w70	70 אמה	70
@@ -239,4 +241,8 @@ variant.m.alt.v26	26 אמה	26
 variant.m.alt.v24	24 אמה	24
 variant.m.alt.h1	אמה	1
 variant.m.alt.h5	5 אמות	5
-variant.m.alt.ramp	32 על 16	32
+variant.m.alt.h3	3 אמות	3
+variant.m.alt.hh1	אמה	1
+variant.m.alt.h10	10 אמות	10
+variant.m.alt.ramp	32 אמה	32
+variant.m.alt.rampW	16 אמה	16
